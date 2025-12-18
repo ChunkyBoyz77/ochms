@@ -16,7 +16,7 @@
 
     <!-- LEFT: AUTH FORM -->
     <div class="flex flex-col justify-center px-8 sm:px-16">
-
+        
         <!-- LOGO -->
         <div class="mb-10">
             <h1 class="text-2xl font-bold text-gray-900">
@@ -24,11 +24,19 @@
             </h1>
         </div>
 
-        <!-- LOGIN FORM -->
+       <!-- LOGIN FORM -->
         <div id="loginForm">
 
             <h2 class="text-3xl font-bold mb-2">Let's log you in</h2>
             <p class="text-gray-500 mb-8">Manage your properties and enquiries.</p>
+
+            {{-- LOGIN ERROR --}}
+            @if ($errors->any())
+                <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200
+                            text-sm text-red-700">
+                    Incorrect email or password.
+                </div>
+            @endif
 
             <form method="POST" action="{{ route('login') }}">
                 @csrf
@@ -71,6 +79,19 @@
                     </button>
                 </div>
 
+                <!-- REMEMBER ME -->
+                <div class="flex items-center gap-2 mt-4">
+                    <input type="checkbox"
+                        name="remember"
+                        id="remember"
+                        class="rounded border-gray-300 text-gray-900
+                                focus:ring-gray-900">
+
+                    <label for="remember" class="text-sm text-gray-600">
+                        Remember me
+                    </label>
+                </div>
+
                 <!-- SUBMIT -->
                 <button type="submit"
                         class="w-full mt-6 bg-gray-900 hover:bg-gray-800
@@ -88,6 +109,7 @@
             </p>
 
         </div>
+
 
 
         <!-- REGISTER FORM -->
@@ -209,6 +231,21 @@
             </p>
 
         </div>
+        <!-- BACK TO OCHMS (PILL STYLE) -->
+        <div class="mt-10 flex justify-center">
+            <a href="{{ route('home') }}"
+            class="inline-flex items-center gap-2
+                    px-4 py-2 rounded-full
+                    border border-gray-200
+                    text-sm text-gray-500
+                    hover:border-gray-300 hover:text-gray-700
+                    hover:bg-gray-50
+                    transition">
+                <i class="fa-solid fa-angle-left text-xs"></i>
+                <span>Back to OCHMS</span>
+            </a>
+        </div>
+
     </div>
 
     <!-- RIGHT: IMAGE -->

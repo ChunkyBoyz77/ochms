@@ -34,7 +34,7 @@ class RegisteredUserController extends Controller
     // SHOW FORMS
     public function createOcs(): View
     {
-        return view('auth.register-ocs');
+        return view('auth.ocs-auth.register-ocs');
     }
 
     public function createLandlord(): View

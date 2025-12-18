@@ -33,39 +33,55 @@
 
             <!-- LOGIN FORM -->
             <div id="loginForm">
-                <form method="POST" action="{{ route('login') }}">
-                    @csrf
+            @if ($errors->any())
+                <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200
+                            text-sm text-red-700">
+                    Incorrect email or password.
+                </div>
+            @endif
 
-                    <div class="mb-4">
-                        <label class="font-semibold">Email</label>
-                        <input type="email" name="email" required
-                               class="w-full p-3 border rounded mt-1">
-                    </div>
+ 
+            <form id="loginFormElement" method="POST" action="{{ route('login') }}">
+                @csrf
 
-                    <div class="mb-4 relative">
-                        <label class="font-semibold">Password</label>
-                        <input type="password" id="loginPassword" name="password" required
-                               class="w-full p-3 border rounded mt-1 pr-10">
+                <div class="mb-4">
+                    <label class="font-semibold">Email</label>
+                    <input type="email" name="email" required
+                        class="w-full p-3 border rounded mt-1">
+                </div>
 
-                        <button type="button"
-                                onclick="togglePassword('loginPassword', this)"
-                                class="absolute right-3 top-10 text-gray-500">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
+                <div class="mb-4 relative">
+                    <label class="font-semibold">Password</label>
+                    <input type="password" id="loginPassword" name="password" required
+                        class="w-full p-3 border rounded mt-1 pr-10">
 
-                    <div class="text-right mb-4">
-                        <a href="{{ route('password.request') }}"
-                           class="text-sm text-gray-900 hover:underline">
-                            Forgot password?
-                        </a>
-                    </div>
-
-                    <button type="submit"
-                            class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg">
-                        Continue
+                    <button type="button"
+                            onclick="togglePassword('loginPassword', this)"
+                            class="absolute right-3 top-10 text-gray-500">
+                        <i class="fa-solid fa-eye"></i>
                     </button>
-                </form>
+                </div>
+
+                <!-- REMEMBER ME + FORGOT PASSWORD -->
+                <div class="flex items-center justify-between mb-4">
+                    <label class="inline-flex items-center gap-2 text-sm text-gray-600">
+                        <input type="checkbox" name="remember"
+                            class="rounded border-gray-300 text-gray-900 focus:ring-gray-900">
+                        Remember me
+                    </label>
+
+                    <a href="{{ route('password.request') }}"
+                    class="text-sm text-gray-900 hover:underline">
+                        Forgot password?
+                    </a>
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg">
+                    Continue
+                </button>
+            </form>
+
 
                 <p class="text-sm text-center mt-4">
                     New here?

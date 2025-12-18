@@ -4,8 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class AdminProfile extends Model
+class JhepaAdmin extends Model
 {
+    protected $table = 'jhepa_admin';
+
     protected $fillable = [
         'user_id',
         'staff_id',

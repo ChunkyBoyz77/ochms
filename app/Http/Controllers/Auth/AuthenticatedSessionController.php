@@ -25,21 +25,67 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
-        ]);
+        /**
+         * ==========================
+         * ADMIN LOGIN (STAFF ID)
+         * ==========================
+         */
+        if ($request->filled('staff_id')) {
 
-        // Manual authentication for Laravel 12
-        if (! Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
-            return back()->withErrors([
-                'email' => trans('auth.failed'),
+            $request->validate([
+                'staff_id' => ['required', 'string'],
+                'password' => ['required', 'string'],
             ]);
+
+            $adminProfile = \App\Models\JhepaAdmin::where(
+                'staff_id',
+                $request->staff_id
+            )->first();
+
+            if (
+                ! $adminProfile ||
+                ! \Illuminate\Support\Facades\Hash::check(
+                    $request->password,
+                    $adminProfile->user->password
+                )
+            ) {
+                return back()->withErrors([
+                    'staff_id' => trans('auth.failed'),
+                ]);
+            }
+
+            Auth::login($adminProfile->user, $request->boolean('remember'));
+            $request->session()->regenerate();
+
+        } else {
+
+            /**
+             * ==========================
+             * NORMAL LOGIN (EMAIL)
+             * ==========================
+             */
+            $request->validate([
+                'email' => ['required', 'string', 'email'],
+                'password' => ['required', 'string'],
+            ]);
+
+            if (! Auth::attempt(
+                $request->only('email', 'password'),
+                $request->boolean('remember')
+            )) {
+                return back()->withErrors([
+                    'email' => trans('auth.failed'),
+                ]);
+            }
+
+            $request->session()->regenerate();
         }
 
-        $request->session()->regenerate();
-
-        // Role-based redirect
+        /**
+         * ==========================
+         * ROLE-BASED REDIRECT
+         * ==========================
+         */
         $role = auth()->user()->role;
 
         if ($role === 'ocs') {
@@ -56,6 +102,7 @@ class AuthenticatedSessionController extends Controller
 
         return redirect('/');
     }
+
 
 
 

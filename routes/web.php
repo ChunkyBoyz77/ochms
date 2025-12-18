@@ -22,7 +22,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'role:ocs'])->group(function () {
     Route::get('/ocs/dashboard', function () {
-        return view('auth.ocs-dashboard');
+        return view('auth.ocs-auth.ocs-dashboard');
     })->name('auth.ocs-dashboard');
 });
 
@@ -47,9 +47,19 @@ Route::get('/become-landlord', function () {
     return view('manage_landlord_screening.become-landlord');
 })->name('landlord.become');
 
-Route::get('/landlord/auth', function () {
-    return view('auth.landlord-auth.landlord-login');
+Route::get('/landlord/login', function () {
+    return view('auth.landlord-auth.landlord-authenticate');
 })->name('landlord.auth');
+
+Route::get('/admin/login', function () {
+    return view('auth.admin-auth.admin-login');
+})->name('admin.login');
+
+Route::get('/admin/dashboard', function () {
+    return view('auth.admin-auth.admin-dashboard');
+})->name('auth.admin-dashboard');
+
+
 
 
 // Step 2: Register as specific role

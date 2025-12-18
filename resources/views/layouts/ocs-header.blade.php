@@ -15,9 +15,14 @@
 
         <!-- LEFT SECTION -->
         <div class="flex items-center space-x-10">
-            <img src="{{ asset('images/umpsa-logo.png') }}" id="navLogo" class="w-10 drop-shadow-md" alt="Logo">
+            <a href="{{ route('home') }}">
+                <img src="{{ asset('images/umpsa-logo.png') }}"
+                    id="navLogo"
+                    class="w-10 drop-shadow-md cursor-pointer"
+                    alt="Logo">
+            </a>
 
-            <a class="nav-link font-regular text-white drop-shadow text-lg hover:text-black-200 cursor-pointer">Home</a>
+            <a href="{{ route('home') }}" class="nav-link font-regular text-white drop-shadow text-lg hover:text-black-200 cursor-pointer">Home</a>
             <a class="nav-link font-regular text-white drop-shadow text-lg hover:text-black-200 cursor-pointer">Rentals</a>
             <a class="nav-link font-regular text-white drop-shadow text-lg hover:text-black-200 cursor-pointer">UMPSA Resources</a>
         </div>
@@ -74,6 +79,12 @@
                             Log in or Sign up
                         </button>
                         <a href="{{ route('landlord.auth') }}" class="block px-4 py-2 hover:bg-gray-100">OCHMSLord</a>
+                        <!-- Hidden Admin Login -->
+                        <button id="adminLoginBtn"
+                                onclick="window.location='{{ route('admin.login') }}'"
+                                class="hidden px-4 py-2 text-left text-sm text-gray-500 hover:bg-gray-100 w-full">
+                            Admin Login
+                        </button>
                     @endguest
 
 
@@ -274,5 +285,23 @@
         }
     }
 
+    //Hidden Admin Login
+    document.addEventListener('keydown', function (e) {
+        if (e.altKey) {
+            document.getElementById('adminLoginBtn')?.classList.remove('hidden');
+        }
+    });
+
+    document.addEventListener('keyup', function () {
+        document.getElementById('adminLoginBtn')?.classList.add('hidden');
+    });
 
     </script>
+
+    @if ($errors->any())
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            openAuthModal();
+        });
+    </script>
+    @endif
