@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
+
 class AuthenticatedSessionController extends Controller
 {
     /**
@@ -22,14 +23,41 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
-        $request->authenticate();
+        $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        // Manual authentication for Laravel 12
+        if (! Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+            return back()->withErrors([
+                'email' => trans('auth.failed'),
+            ]);
+        }
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Role-based redirect
+        $role = auth()->user()->role;
+
+        if ($role === 'ocs') {
+            return redirect()->route('home');
+        }
+
+        if ($role === 'landlord') {
+            return redirect()->route('landlord.dashboard');
+        }
+
+        if ($role === 'admin') {
+            return redirect()->route('auth.admin-dashboard');
+        }
+
+        return redirect('/');
     }
+
+
 
     /**
      * Destroy an authenticated session.

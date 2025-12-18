@@ -19,8 +19,10 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'email',
         'password',
+        'email',
+        'phone_number',
+        'role',
     ];
 
     /**
@@ -45,4 +47,20 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function ocs()
+    {
+        return $this->hasOne(Ocs::class);
+    }
+
+    public function landlord()
+    {
+        return $this->hasOne(Landlord::class);
+    }
+
+    public function adminProfile()
+    {
+        return $this->hasOne(AdminProfile::class);
+    }
+
 }

@@ -2,6 +2,7 @@
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
+        
         <!-- Name -->
         <div>
             <x-input-label for="name" :value="__('Name')" />
@@ -48,5 +49,8 @@
                 {{ __('Register') }}
             </x-primary-button>
         </div>
+
+    <input type="hidden" name="role" value="ocs">
+
     </form>
 </x-guest-layout>
