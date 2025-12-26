@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\LandlordScreeningController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisteredUserController;
+
 
 
 Route::get('/', function () {
@@ -26,17 +28,100 @@ Route::middleware(['auth', 'role:ocs'])->group(function () {
     })->name('auth.ocs-dashboard');
 });
 
-Route::middleware(['auth', 'role:landlord'])->group(function () {
-    Route::get('/landlord/dashboard', function () {
-        return view('auth.landlord-auth.landlord-dashboard');
-    })->name('landlord.dashboard');
-});
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
-});
+
+Route::middleware(['auth', 'role:landlord'])
+    ->prefix('landlord')
+    ->group(function () {
+
+        // Dashboard
+        Route::get('/dashboard', [LandlordScreeningController::class, 'index'])
+            ->name('landlord.dashboard');
+
+        // Verification page
+        Route::get('/verification', [LandlordScreeningController::class, 'verification'])
+            ->name('landlord.verification');
+
+        // Store files in SESSION (not database yet)
+        Route::post('/verification/store-session', [LandlordScreeningController::class, 'storeInSession'])
+            ->name('landlord.verification.storeSession');
+
+        // Delete files from SESSION
+        Route::delete('/verification/delete-session/{type}', 
+            [LandlordScreeningController::class, 'deleteFromSession']
+        )->name('landlord.verification.deleteSession');
+
+        // FINALIZE - Save to database after 100% progress
+        Route::post('/verification/finalize', [LandlordScreeningController::class, 'finalizeVerification'])
+            ->name('landlord.verification.finalize');
+
+        // Background Screening page
+        Route::get('/verification/screening', [LandlordScreeningController::class, 'screening'])
+            ->name('landlord.verification.screening');
+
+        // Save screening data (AJAX)
+        Route::post('/verification/save-screening', [LandlordScreeningController::class, 'saveScreeningToSession'])
+            ->name('landlord.verification.saveScreeningSession');
+
+        // Delete from database (if needed)
+        Route::delete('/verification/delete/{type}', 
+            [LandlordScreeningController::class, 'deleteDocument']
+        )->name('landlord.verification.delete');
+
+        Route::get(
+            '/verification/preview/{type}',
+            [LandlordScreeningController::class, 'previewSessionFile']
+        )->name('landlord.verification.preview');
+
+         Route::get('/verification/application',
+            [LandlordScreeningController::class, 'viewApplication']
+        )->name('landlord.verification.view');
+
+        // Edit application (ONLY pending / rejected)
+        Route::post('/verification/application/edit',
+            [LandlordScreeningController::class, 'editApplication']
+        )->name('landlord.verification.update');
+
+        Route::post(
+            '/verification/withdraw',
+            [LandlordScreeningController::class, 'withdraw']
+        )->name('landlord.verification.withdraw');
+
+    });
+
+
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('admin')
+    ->group(function () {
+
+        // Admin dashboard
+        Route::get('/dashboard', function () {
+            return view('auth.admin-auth.admin-dashboard');
+        })->name('admin.dashboard');
+
+        // Verification list (PENDING ONLY)
+        Route::get('/verifications',
+            [LandlordScreeningController::class, 'adminVerificationIndex']
+        )->name('admin.verifications.index');
+
+        // View verification details
+        Route::get('/verifications/{landlord}',
+            [LandlordScreeningController::class, 'adminVerificationShow']
+        )->name('admin.verifications.show');
+
+        // Actions
+        Route::post('/verifications/{landlord}/approve',
+            [LandlordScreeningController::class, 'adminApproveVerification']
+        )->name('admin.verifications.approve');
+
+        Route::post('/verifications/{landlord}/reject',
+            [LandlordScreeningController::class, 'adminRejectVerification']
+        )->name('admin.verifications.reject');
+
+        Route::post('/verifications/{landlord}/resubmission',
+            [LandlordScreeningController::class, 'adminRequestResubmission']
+        )->name('admin.verifications.resubmit');
+    });
 
 require __DIR__.'/auth.php';
 
@@ -55,11 +140,6 @@ Route::get('/admin/login', function () {
     return view('auth.admin-auth.admin-login');
 })->name('admin.login');
 
-Route::get('/admin/dashboard', function () {
-    return view('auth.admin-auth.admin-dashboard');
-})->name('auth.admin-dashboard');
-
-
 
 
 // Step 2: Register as specific role
@@ -75,12 +155,6 @@ Route::post('/register/admin', [RegisteredUserController::class, 'storeAdmin'])-
 // -------------------------
 // LANDLORD DASHBOARD ROUTES
 // -------------------------
-
-// Main dashboard
-Route::get('/landlord/dashboard', function () {
-    return view('manage_rental_booking.landlord-dashboard');
-})->name('landlord.dashboard');
-
 
 // Manage listings page (placeholder)
 Route::get('/landlord/listings', function () {

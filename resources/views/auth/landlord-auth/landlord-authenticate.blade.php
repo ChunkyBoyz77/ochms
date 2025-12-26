@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Barrio&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barriecito&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -19,8 +21,8 @@
         
         <!-- LOGO -->
         <div class="mb-10">
-            <h1 class="text-2xl font-bold text-gray-900">
-                OCHMS <span class="text-sm font-normal text-gray-500">Landlord</span>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold font-[Barrio] text-gray-900">
+                OCHMS <span class="text-sm sm:text-base lg:text-lg font-semibold text-gray-500">Landlord</span>
             </h1>
         </div>
 

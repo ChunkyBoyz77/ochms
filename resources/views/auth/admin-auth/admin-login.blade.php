@@ -11,8 +11,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800
-             flex items-center justify-center px-4">
+<body class="min-h-screen bg-cover bg-center flex items-center justify-center px-4" style="background-image: url('{{ asset('images/umpsa-bg.jpg') }}');">
 
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-10">
 
@@ -94,6 +93,21 @@
         <p class="text-center text-xs text-gray-400 mt-8">
             This system is restricted to JHEPA administrators.
         </p>
+
+         <!-- BACK TO OCHMS (PILL STYLE) -->
+        <div class="mt-10 flex justify-center">
+            <a href="{{ route('home') }}"
+            class="inline-flex items-center gap-2
+                    px-4 py-2 rounded-full
+                    border border-gray-200
+                    text-sm text-gray-500
+                    hover:border-gray-300 hover:text-gray-700
+                    hover:bg-gray-50
+                    transition">
+                <i class="fa-solid fa-angle-left text-xs"></i>
+                <span>Back to OCHMS</span>
+            </a>
+        </div>
 
     </div>
 

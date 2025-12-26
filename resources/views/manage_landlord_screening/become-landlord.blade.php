@@ -11,7 +11,7 @@
 
 <body class="bg-white">
 
-@include('layouts.ocs-header')
+@include('layouts.header.ocs-header')
 
 <!-- HERO SECTION -->
 <section class="relative h-[70vh] flex items-center justify-center bg-gray-900">

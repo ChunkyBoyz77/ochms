@@ -1,68 +1,91 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard | OCHMS</title>
+@extends('layouts.admin')
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@section('title', 'Dashboard')
 
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+@section('content')
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
+    <!-- WELCOME -->
+    <h1 class="text-xl font-semibold mb-6">
+        Welcome {{ Auth::user()->name ?? 'Admin' }},
+    </h1>
 
-<body class="min-h-screen bg-gray-100">
+    <!-- TOP METRICS -->
+    <div class="grid grid-cols-3 gap-6 mb-10">
 
-    <!-- TOP BAR -->
-    <div class="bg-gray-900 text-white px-6 py-4 flex justify-between items-center">
-        <h1 class="text-xl font-semibold">
-            OCHMS — JHEPA Admin
-        </h1>
+        <!-- Rental Properties Registered -->
+        <div class="bg-white rounded-xl shadow p-6 border border-gray-200">
+            <h3 class="font-semibold text-gray-700 mb-4">
+                Rental Properties Registered
+            </h3>
 
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button class="text-sm hover:underline">
-                Logout
-            </button>
-        </form>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div class="p-8">
-
-        <div class="bg-white rounded-xl shadow p-6 max-w-xl">
-            <h2 class="text-2xl font-bold mb-4">
-                Welcome, {{ auth()->user()->name }}
-            </h2>
-
-            <p class="text-gray-600 mb-6">
-                You are logged in as a <strong>JHEPA Administrator</strong>.
-            </p>
-
-            <div class="space-y-2 text-sm">
-                <p>
-                    <span class="font-semibold">Role:</span>
-                    {{ auth()->user()->role }}
-                </p>
-
-                <p>
-                    <span class="font-semibold">Staff ID:</span>
-                    {{ auth()->user()->adminProfile->staff_id ?? 'N/A' }}
-                </p>
-
-                <p>
-                    <span class="font-semibold">Email (system):</span>
-                    {{ auth()->user()->email }}
-                </p>
+            <div class="w-full h-40 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
+                Pie Chart Placeholder
             </div>
+        </div>
 
-            <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                ✅ Admin authentication successful.
+        <!-- OCS Housed -->
+        <div class="bg-yellow-400 rounded-xl shadow p-6">
+            <h3 class="font-semibold text-gray-800 mb-4">
+                OCS Housed
+            </h3>
+
+            <div class="flex items-center justify-center h-40">
+                <span class="text-5xl font-bold text-gray-900">
+                    1435
+                </span>
+            </div>
+        </div>
+
+        <!-- Ratings -->
+        <div class="bg-green-500 rounded-xl shadow p-6 text-white">
+            <h3 class="font-semibold mb-4">
+                Ratings
+            </h3>
+
+            <div class="h-40 flex flex-col justify-between">
+                <div class="text-2xl font-semibold">
+                    Average: 4.53 ⭐
+                </div>
+
+                <div class="w-full h-20 bg-green-600 rounded-lg flex items-center justify-center text-green-200">
+                    Rating Trend Placeholder
+                </div>
             </div>
         </div>
 
     </div>
 
-</body>
-</html>
+    <!-- FUNCTIONS -->
+    <h2 class="text-lg font-semibold mb-4">Functions</h2>
+
+    <div class="grid grid-cols-6 gap-6">
+
+        <!-- Landlord Screening -->
+        <a href="{{ route('admin.verifications.index') }}"
+           class="bg-purple-500 hover:bg-purple-700 text-white
+                  rounded-xl shadow p-8 h-80
+                  flex flex-col items-center justify-center
+                  transition">
+
+            <i class="fa-solid fa-user-check text-4xl mb-4"></i>
+            <span class="text-lg font-semibold text-center">
+                Landlord Screening
+            </span>
+        </a>
+
+        <!-- Manage UMPSA Resources -->
+        <a href="#"
+           class="bg-purple-500 hover:bg-purple-700 text-white
+                  rounded-xl shadow p-8 h-80
+                  flex flex-col items-center justify-center
+                  transition">
+
+            <i class="fa-solid fa-building-columns text-4xl mb-4"></i>
+            <span class="text-lg font-semibold text-center">
+                Manage UMPSA Resources
+            </span>
+        </a>
+
+    </div>
+
+@endsection

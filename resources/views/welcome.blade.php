@@ -175,7 +175,7 @@
 
 
 
-    @include('layouts.ocs-header')
+    @include('layouts.header.ocs-header')
     <!-- HERO SECTION -->
     <div class="relative w-full h-screen bg-cover bg-center shadow"
         style="background-image: url('{{ asset('images/ocs-hero-bg.jpg') }}')">
