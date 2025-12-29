@@ -13,17 +13,54 @@ return new class extends Migration
     {
         Schema::create('listings', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('landlord_id'); // landlord
-            $table->unsignedBigInteger('ocs_id')->nullable();
-            $table->string('title');
-            $table->string('address');
-            $table->string('distance')->nullable();
-            $table->json('amenities')->nullable(); // bed, wifi, etc.
-            $table->json('tags')->nullable(); // furnished, verified, etc.
-            $table->string('image')->nullable();
-            $table->timestamps();
+            // Owner
+            $table->foreignId('landlord_id')
+                  ->constrained('users')
+                  ->cascadeOnDelete();
 
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            // Occupant (assigned after booking approval)
+            $table->foreignId('ocs_id')
+                  ->nullable()
+                  ->constrained('users')
+                  ->nullOnDelete();
+
+            // Basic info
+            $table->string('title');
+            $table->enum('property_type', ['Room', 'Apartment', 'House']);
+            $table->text('description');
+
+            // Location
+            $table->string('address');
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->float('distance_to_umpsa')->nullable();
+
+            // Pricing
+            $table->decimal('monthly_rent', 8, 2);
+            $table->decimal('deposit', 8, 2)->nullable();
+
+            // Amenities
+            $table->json('amenities')->nullable();
+
+            // Policies
+            $table->text('policy_cancellation')->nullable();
+            $table->text('policy_refund')->nullable();
+            $table->text('policy_early_movein')->nullable();
+            $table->text('policy_late_payment')->nullable();
+            $table->text('policy_additional')->nullable();
+
+            // Media
+            $table->string('grant_document_path')->nullable();
+
+            // Status
+            $table->enum('status', [
+                'pending',
+                'published',
+                'occupied',
+                'rejected'
+            ])->default('pending');
+
+            $table->timestamps();
         });
     
     }

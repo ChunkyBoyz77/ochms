@@ -419,7 +419,6 @@ class LandlordScreeningController extends Controller
     {
         $now = Carbon::now();
         $admin = Auth::id();
-
         if ($landlord->screening_status !== 'pending') {
             abort(403);
         }

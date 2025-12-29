@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LandlordScreeningController;
+use App\Http\Controllers\RentalBookingController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisteredUserController;
 
@@ -139,6 +140,17 @@ Route::get('/landlord/login', function () {
 Route::get('/admin/login', function () {
     return view('auth.admin-auth.admin-login');
 })->name('admin.login');
+
+//Rental Booking Process
+Route::post('/landlord/listings', [RentalBookingController::class, 'createListing'])
+     ->name('landlord.listings.store');
+
+Route::post(
+    '/landlord/listings/save-draft',
+    [RentalBookingController::class, 'saveListingDraft']
+)->name('landlord.listings.saveDraft');
+
+
 
 
 
