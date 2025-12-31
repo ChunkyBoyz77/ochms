@@ -66,6 +66,11 @@ class Landlord extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function listings()
+    {
+        return $this->hasMany(Listing::class);
+    }
+
     /**
      * Admin who reviewed the landlord
      */

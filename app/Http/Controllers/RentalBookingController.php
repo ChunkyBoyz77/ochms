@@ -100,7 +100,7 @@ public function createListing(Request $request)
     |--------------------------------------------------------------------------
     */
     $listing = Listing::create([
-        'landlord_id' => Auth::id(),
+        'landlord_id' => Auth::user()->landlord->id,
         'student_id' => null,
         'title' => $validated['title'],
         'property_type' => $validated['property_type'],
@@ -198,7 +198,7 @@ public function createListing(Request $request)
 
 public function landlordListings()
 {
-    $landlordId = Auth::id();
+    $landlordId = Auth::user()->landlord->id;
 
     $pendingListings = Listing::with(['images'])
         ->where('landlord_id', $landlordId)
@@ -228,7 +228,7 @@ public function landlordListings()
 
 public function show(Listing $listing)
 {
-    abort_if($listing->landlord_id !== auth()->id(), 403);
+    abort_if($listing->landlord_id !== Auth::user()->landlord->id, 403);
 
     $listing->badges = \App\Services\ListingBadgeService::resolve($listing);
 
@@ -237,7 +237,7 @@ public function show(Listing $listing)
 
 public function showAllMedias(Listing $listing)
 {
-    abort_if($listing->landlord_id !== auth()->id(), 403);
+    abort_if($listing->landlord_id !==  Auth::user()->landlord->id, 403);
 
     return view(
         'manage_rental_booking.landlord-listing-medias',
@@ -248,7 +248,7 @@ public function showAllMedias(Listing $listing)
 public function update(Request $request, Listing $listing)
 {
     // ✅ Ownership check (simple & explicit)
-    if ($listing->landlord_id !== Auth::id()) {
+    if ($listing->landlord_id !== Auth::user()->landlord->id) {
         abort(403);
     }
 
@@ -376,7 +376,7 @@ public function deleteImage($id)
     $image = ListingImage::findOrFail($id);
 
     // Ownership check
-    if ($image->listing->landlord_id !== auth()->id()) {
+    if ($image->listing->landlord_id !==  Auth::user()->landlord->id) {
         abort(403);
     }
 
@@ -393,7 +393,7 @@ public function deleteImage($id)
 
 public function deleteGrant(Listing $listing)
 {
-    if ($listing->landlord_id !== auth()->id()) {
+    if ($listing->landlord_id !==  Auth::user()->landlord->id) {
         abort(403);
     }
 
@@ -414,7 +414,7 @@ public function deleteGrant(Listing $listing)
 public function edit(Listing $listing)
 {
     // ✅ Simple ownership check (same pattern as show)
-    abort_if($listing->landlord_id !== auth()->id(), 403);
+    abort_if($listing->landlord_id !==  Auth::user()->landlord->id, 403);
 
     return view('manage_rental_booking.landlord-edit-listing', [
         'listing' => $listing,
@@ -425,7 +425,7 @@ public function edit(Listing $listing)
 
 public function destroy(Listing $listing)
 {
-    if ($listing->landlord_id !== auth()->id()) {
+    if ($listing->landlord_id !==  Auth::user()->landlord->id) {
         abort(403);
     }
 
@@ -463,6 +463,7 @@ public function adminListingApprove(Listing $listing)
 
     $listing->update([
         'status' => 'published',
+        'published_at' => now(),
     ]);
 
     return redirect()
