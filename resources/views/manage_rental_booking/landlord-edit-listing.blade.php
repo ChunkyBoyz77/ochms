@@ -30,7 +30,7 @@
         </a>
 
         <h1 class="text-2xl sm:text-3xl font-semibold">
-            Create New Property Listing
+            Update Property Listing
         </h1>
     </div>
 
@@ -61,11 +61,12 @@
 
 
 <form method="POST"
-      action="{{ route('landlord.listings.store') }}"
+      action="{{ route('landlord.listings.update', $listing) }}"
       enctype="multipart/form-data"
       class="space-y-6">
 
 @csrf
+@method('PUT')
 
 <!-- ================================================= -->
 <!-- SECTION TEMPLATE -->
@@ -106,6 +107,7 @@ HTML;
     <div id="basic-content" class="px-6 pb-6">
         <div class="pt-4 space-y-4">
             <input type="text" name="title"
+                   value="{{ old('title', $listing->title) }}"
                    placeholder="Listing title (e.g. Modern Apartment Near UMPSA)"
                    class="w-full px-4 py-3 rounded-lg
                             border 
@@ -118,7 +120,7 @@ HTML;
             <div 
                 x-data="{
                     open: false,
-                    selected: '',
+                    selected: '{{ $listing->property_type }}',
                     select(value) {
                         this.selected = value;
                         this.open = false;
@@ -223,6 +225,7 @@ HTML;
             <input type="text"
                 id="address-input"
                 name="address"
+                value="{{ old('address', $listing->address) }}"
                 placeholder="Full address"
                 class="w-full px-4 py-3 border rounded-lg">
 
@@ -244,9 +247,9 @@ HTML;
 
 
 
-            <input type="hidden" id="latitude" name="latitude">
-            <input type="hidden" id="longitude" name="longitude">
-            <input type="hidden" id="distance_to_umpsa" name="distance_to_umpsa">
+            <input type="hidden" id="latitude" name="latitude" value="{{ $listing->latitude }}">
+            <input type="hidden" id="longitude" name="longitude" value="{{ $listing->longitude }}">
+            <input type="hidden" id="distance_to_umpsa" name="distance_to_umpsa" value="{{ $listing->distance_to_umpsa }}">
 
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -295,11 +298,11 @@ HTML;
         <div class="pt-4 space-y-6">
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input type="number" name="monthly_rent" id="monthly_rent"
+                <input type="number" name="monthly_rent" id="monthly_rent" value="{{ old('monthly_rent', $listing->monthly_rent) }}" 
                        placeholder="Monthly Rent (RM)"
                        class="px-4 py-3 border rounded-lg">
 
-                <input type="number" name="deposit" id="deposit"
+                <input type="number" name="deposit" id="deposit" value="{{ old('deposit', $listing->deposit) }}"
                        placeholder="Deposit (RM)"
                        class="px-4 py-3 border rounded-lg">
                 
@@ -345,7 +348,9 @@ HTML;
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     @foreach(['WiFi','Parking','Air Conditioning','Washing Machine','Security','Furnished'] as $a)
                         <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" name="amenities[]" value="{{ $a }}" class="
+                            <input type="checkbox" name="amenities[]" value="{{ $a }}" 
+                            @checked(in_array($a, $listing->amenities ?? []))
+                            class="
                                 w-4 h-4
                                 rounded-full
                                 border-gray-300
@@ -464,6 +469,8 @@ HTML;
                     Upload clear photos or videos of the property (rooms, kitchen, exterior).
                 </p>
 
+                
+
                 <!-- Dropzone -->
                 <label
                     class="block w-full cursor-pointer
@@ -490,6 +497,7 @@ HTML;
                             Accepted: JPG, PNG, MP4, MOV (Max 20MB each)
                         </p>
                     </div>
+                    
 
                     <input
                         type="file"
@@ -499,6 +507,25 @@ HTML;
                         name="media"
                         id="media-input">
                 </label>
+                @if($listing->images->count())
+                <div id="existing-media" class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6">
+                    @foreach($listing->images as $img)
+                        <div class="relative">
+                            <img src="{{ asset('storage/'.$img->image_path) }}"
+                                class="h-40 w-full object-cover rounded-xl border">
+
+                            <button
+                                type="button"
+                                onclick="deleteExistingImage({{ $img->id }}, this)"
+                                class="absolute top-2 right-2
+                                    bg-black/60 text-white
+                                    w-7 h-7 rounded-full hover:bg-red-600 transition">
+                                &times;
+                            </button>
+                        </div>
+                    @endforeach
+                </div>
+                @endif
                 <div id="media-preview"
                  class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6"></div>
 
@@ -507,7 +534,7 @@ HTML;
             <!-- ================= DIVIDER ================= -->
             <div class="border-t border-gray-200"></div>
 
-            <!-- ================= DOCUMENTS ================= -->
+           <!-- ================= DOCUMENT ================= -->
             <div>
                 <h4 class="font-semibold text-lg mb-2">
                     Ownership / Authorization Document
@@ -516,12 +543,13 @@ HTML;
                     Upload proof that you are authorized to rent this property.
                 </p>
 
+                {{-- Upload --}}
                 <label
                     class="flex items-center gap-4
-                           border border-gray-300 rounded-xl
-                           px-5 py-4 cursor-pointer
-                           hover:border-red-400 hover:bg-red-50
-                           transition">
+                        border border-gray-300 rounded-xl
+                        px-5 py-4 cursor-pointer
+                        hover:border-red-400 hover:bg-red-50
+                        transition">
 
                     <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
                         <i class="fa-solid fa-file-contract text-red-500"></i>
@@ -546,11 +574,64 @@ HTML;
                         name="grant"
                         accept="application/pdf,image/*"
                         class="hidden">
-
                 </label>
-                <div id="document-preview" class="mt-4"></div>
 
+                {{-- EXISTING DOCUMENT (SAME UI AS PREVIEW) --}}
+                @if($listing->grant_document_path)
+                    @php
+                        $filePath = storage_path('app/public/'.$listing->grant_document_path);
+                        $fileName = basename($listing->grant_document_path);
+                        $fileSize = file_exists($filePath)
+                            ? round(filesize($filePath) / 1024 / 1024, 2)
+                            : null;
+                    @endphp
+
+                    <div id="existing-document"
+                        class="relative mt-4">
+
+                        <a href="{{ asset('storage/'.$listing->grant_document_path) }}"
+                        target="_blank"
+                        class="flex items-center gap-4
+                                border border-gray-300 rounded-xl
+                                px-4 py-3 bg-gray-50
+                                hover:bg-red-50 transition">
+
+                            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                                <i class="fa-solid fa-file-pdf text-red-500"></i>
+                            </div>
+
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-800 underline">
+                                    {{ $fileName }}
+                                </p>
+                                @if($fileSize)
+                                    <p class="text-xs text-gray-500">
+                                        {{ $fileSize }} MB
+                                    </p>
+                                @endif
+                            </div>
+
+                            <i class="fa-solid fa-arrow-up-right-from-square text-gray-400"></i>
+                        </a>
+
+                        {{-- ❌ DELETE BUTTON --}}
+                        <button
+                            type="button"
+                            onclick="deleteExistingGrant({{ $listing->id }})"
+                            class="absolute -top-2 -right-2
+                                w-7 h-7 rounded-full
+                                bg-black/70 text-white
+                                flex items-center justify-center
+                                hover:bg-red-600 transition">
+                            &times;
+                        </button>
+                    </div>
+                @endif
+
+                {{-- NEW DOCUMENT PREVIEW --}}
+                <div id="document-preview" class="mt-4"></div>
             </div>
+
 
             <!-- ================= ACTION ================= -->
             <div class="pt-4">
@@ -572,7 +653,7 @@ HTML;
     <button type="submit"
         class="bg-red-500 hover:bg-red-600 text-white
                px-10 py-4 rounded-xl font-semibold text-lg shadow-lg">
-        Publish Listing
+        Edit Listing
     </button>
 </div>
 
@@ -614,6 +695,24 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSaveButton(section);
     });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    sectionOrder.forEach(section => {
+        sectionsCompleted[section] = true;
+        markSectionComplete(section);
+    });
+
+    updateProgress();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const dist = {{ $listing->distance_to_umpsa ?? 'null' }};
+    if (dist) {
+        document.getElementById('distance-umpsa').textContent = Number(dist).toFixed(2);
+    }
+});
+
+
 
 /* ================= TOGGLE ================= */
 function toggleSection(section) {
@@ -702,6 +801,7 @@ async function saveSection(section, btn) {
 
     const sectionEl = document.getElementById(section + '-content');
     syncQuillEditors();
+
     const inputs = sectionEl.querySelectorAll('input, textarea, select');
 
     const data = new FormData();
@@ -827,6 +927,9 @@ function addMediaFiles(files) {
         if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) return;
         mediaFiles.push(file);
     });
+
+    sectionsDirty.media = true;
+    updateSaveButton('media');
     renderMediaPreview();
 }
 
@@ -880,6 +983,8 @@ function renderMediaPreview() {
 }
 
 /* ================= DOCUMENT PREVIEW ================= */
+let grantFile = null;
+
 const docInput = document.getElementById('grant-input');
 const docPreview = document.getElementById('document-preview');
 
@@ -888,38 +993,56 @@ docInput.addEventListener('change', () => {
 
     if (!docInput.files || !docInput.files.length) return;
 
-    grantFile = docInput.files[0]; // ✅ STORE IT
+    grantFile = docInput.files[0];
 
     const fileURL = URL.createObjectURL(grantFile);
 
     docPreview.innerHTML = `
-        <a href="${fileURL}"
-           target="_blank"
-           class="flex items-center gap-4
-                  border border-gray-300 rounded-xl
-                  px-4 py-3 bg-gray-50
-                  hover:bg-red-50 transition
-                  cursor-pointer">
+        <div class="relative">
+            <a href="${fileURL}"
+               target="_blank"
+               class="flex items-center gap-4
+                      border border-gray-300 rounded-xl
+                      px-4 py-3 bg-gray-50
+                      hover:bg-red-50 transition">
 
-            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                <i class="fa-solid fa-file text-red-500"></i>
-            </div>
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <i class="fa-solid fa-file text-red-500"></i>
+                </div>
 
-            <div class="flex-1">
-                <p class="text-sm font-medium text-gray-800 underline">
-                    ${grantFile.name}
-                </p>
-                <p class="text-xs text-gray-500">
-                    ${(grantFile.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-            </div>
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-800 underline">
+                        ${grantFile.name}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                        ${(grantFile.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                </div>
 
-            <i class="fa-solid fa-arrow-up-right-from-square text-gray-400"></i>
-        </a>
+                <i class="fa-solid fa-arrow-up-right-from-square text-gray-400"></i>
+            </a>
+
+            <button
+                type="button"
+                onclick="removeNewGrant()"
+                class="absolute -top-2 -right-2
+                       w-7 h-7 rounded-full
+                       bg-black/70 text-white
+                       flex items-center justify-center
+                       hover:bg-red-600 transition">
+                &times;
+            </button>
+        </div>
     `;
 
-    docInput.value = ''; // safe now
+    docInput.value = '';
 });
+
+function removeNewGrant() {
+    grantFile = null;
+    docPreview.innerHTML = '';
+}
+
 
 const UMPSA = {
     lat: 3.5449,
@@ -931,16 +1054,18 @@ let marker;
 let autocomplete;
 
 function initMap() {
+    const initialLat = {{ $listing->latitude ?? 'UMPSA.lat' }};
+    const initialLng = {{ $listing->longitude ?? 'UMPSA.lng' }};
+
     map = new google.maps.Map(document.getElementById('map'), {
-        center: UMPSA,
-        zoom: 14,
-        mapTypeControl: false,
-        streetViewControl: false,
+        center: { lat: initialLat, lng: initialLng },
+        zoom: 15,
     });
+
 
     marker = new google.maps.Marker({
         map,
-        position: UMPSA,
+        position: { lat: initialLat, lng: initialLng },
         draggable: true
     });
 
@@ -1146,6 +1271,56 @@ document.addEventListener('DOMContentLoaded', () => {
         el.classList.remove('border');
     });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    editors.description.root.innerHTML = `{!! addslashes($listing->description ?? '') !!}`;
+    editors.policy_cancellation.root.innerHTML = `{!! addslashes($listing->policy_cancellation ?? '') !!}`;
+    editors.policy_refund.root.innerHTML = `{!! addslashes($listing->policy_refund ?? '') !!}`;
+    editors.policy_early_movein.root.innerHTML = `{!! addslashes($listing->policy_early_movein ?? '') !!}`;
+    editors.policy_late_payment.root.innerHTML = `{!! addslashes($listing->policy_late_payment ?? '') !!}`;
+    editors.policy_additional.root.innerHTML = `{!! addslashes($listing->policy_additional ?? '') !!}`;
+});
+
+
+function deleteExistingImage(id, btn) {
+    fetch(`/landlord/listings/media/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Delete failed');
+        btn.closest('.relative').remove();
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Failed to delete image');
+    });
+}
+
+function deleteExistingGrant(listingId) {
+    if (!confirm('Delete this document?')) return;
+
+    fetch(`/landlord/listings/${listingId}/grant`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Failed');
+        document.getElementById('existing-document')?.remove();
+    })
+    .catch(() => {
+        alert('Failed to delete document');
+    });
+}
+
+
+
 
 
 

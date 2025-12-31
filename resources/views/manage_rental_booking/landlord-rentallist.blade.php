@@ -4,7 +4,7 @@
 
 @section('content')
 
-<div class="px-10 mt-10 mb-20 w-full mx-auto">
+<div class="px-10 mb-20 w-full mx-auto">
 
 
     {{-- Create Listings --}}
@@ -20,92 +20,226 @@
 
     </div>
 
+@php
+$amenityIcons = [
+    'WiFi' => 'fa-wifi',
+    'Parking' => 'fa-car',
+    'Air Conditioning' => 'fa-snowflake',
+    'Washing Machine' => 'fa-soap',
+    'Security' => 'fa-shield-halved',
+    'Furnished' => 'fa-couch',
+];
+@endphp
 
-    {{-- LISTINGS LOOP --}}
-    @foreach([1,2,3] as $i)
-    <div class="w-full  bg-white rounded-xl shadow-sm overflow-hidden border mb-6">
+<h2 class="text-xl font-semibold mb-4 mt-5">Published Listings</h2>
 
-        <div class="grid grid-cols-12">
+@if($publishedListings->isEmpty())
+    <p class="text-gray-500 mb-6">No approved listings yet.</p>
+@endif
 
-            {{-- LEFT IMAGE --}}
-            <div class="col-span-3">
-                <img src="{{ asset('images/ocs-taman-placeholder.jpg') }}"
-                     class="w-full h-48 object-cover">
-            </div>
+@foreach($publishedListings as $listing)
+<div class="w-full bg-white rounded-xl shadow-sm overflow-hidden border mb-6 relative group">
+<a href="{{ route('landlord.listings.show', $listing) }}"
+   class="absolute inset-0 z-10"
+   aria-label="View listing details">
+</a>
 
-            {{-- MIDDLE CONTENT --}}
-            <div class="col-span-6 px-6 py-4">
+    <div class="grid grid-cols-12">
 
-                {{-- Title --}}
-                <h2 class="font-semibold text-lg">Room for Rent - All UMPSA Student</h2>
+        {{-- IMAGE --}}
+        <div class="col-span-3">
+            <img
+                src="{{ $listing->images->first()?->image_path
+                        ? asset('storage/'.$listing->images->first()->image_path)
+                        : asset('images/ocs-taman-placeholder.jpg') }}"
+                class="w-full h-48 object-cover">
+        </div>
 
-                {{-- Address --}}
-                <p class="text-xs text-gray-600 mt-1">
-                    Lot 231, Taman PLKN, 26600 Pekan, Pahang
-                </p>
+        {{-- CONTENT --}}
+        <div class="col-span-6 px-6 py-4">
 
-                {{-- Distance --}}
-                <div class="mt-2 bg-gray-100 inline-block text-xs px-2 py-1 rounded">
+            <h2 class="font-semibold text-lg mb-1">
+                {{ $listing->title }}
+            </h2>
+
+            <p class="text-xs text-gray-600">
+                {{ $listing->address }}
+            </p>
+
+            @if($listing->distance_to_umpsa)
+                <div class="mt-2 bg-gray-100 inline-block text-xs px-2 py-1 rounded mb-2">
                     <i class="fa-solid fa-location-dot mr-1 text-red-500"></i>
-                    5km From UMPSA Pekan
+                    {{ number_format($listing->distance_to_umpsa, 2) }} km from UMPSA
                 </div>
+            @endif
 
-                {{-- Icons row --}}
-                <div class="mt-2 flex items-center space-x-2 text-sm text-gray-600">
-                    <i class="fa-solid fa-bed"></i>
-                    <i class="fa-solid fa-wifi"></i>
-                    <i class="fa-solid fa-snowflake"></i>
-                    <i class="fa-solid fa-shower"></i>
-                </div>
-
-                {{-- Badges --}}
-                <div class="flex flex-wrap gap-2 mt-3 text-xs">
-
-                    <span class="px-3 py-1 bg-green-50 text-green-600 rounded-full border">
-                        ✔ Verified Landlord
-                    </span>
-
-                    <span class="px-3 py-1 bg-gray-100 rounded-full border text-gray-600">
-                        Fully Furnished
-                    </span>
-
-                    <span class="px-3 py-1 bg-gray-100 rounded-full border text-gray-600">
-                        UMPSA Student Only
-                    </span>
-
-                    <span class="px-3 py-1 bg-gray-100 rounded-full border text-gray-600">
-                        Cat Friendly
-                    </span>
-
-                </div>
-
+            {{-- AMENITIES ICONS --}}
+            <div class="mt-2 flex items-center space-x-2 text-sm text-gray-600">
+                @foreach($listing->amenities ?? [] as $amenity)
+                    @if(isset($amenityIcons[$amenity]))
+                        <i class="fa-solid {{ $amenityIcons[$amenity] }}"
+                           title="{{ $amenity }}"></i>
+                    @endif
+                @endforeach
             </div>
 
-            {{-- RIGHT SECTION (Flex container to push buttons right) --}}
-            <div class="col-span-3 flex justify-end items-center pr-10">
-                
-                {{-- BUTTON COLUMN --}}
-                <div class="w-28 flex flex-col gap-3">
+            {{-- BADGES --}}
+            <div class="flex flex-wrap gap-2 mt-3 text-xs">
+                @foreach($listing->badges as $badge)
+                    <span
+                        class="px-3 py-1 rounded-full border
+                            {{ $badge['style'] === 'green'
+                                ? 'bg-green-50 text-green-600'
+                                : 'bg-gray-100 text-gray-600' }}">
+                        {{ $badge['label'] }}
+                    </span>
+                @endforeach
+            </div>
 
-                    <a href="#"
-                    class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium px-3 py-2 rounded-lg text-center transition">
+        </div> {{-- END CONTENT --}}
+      
+        {{-- ACTIONS --}}
+        <div class="col-span-3 flex justify-end items-center pr-10 relative z-20">
+            <div class="w-36 flex flex-col gap-3">
+
+                {{-- EDIT / DELETE (ONLY if NOT linked to OCS) --}}
+                @if ($listing->ocs_id === null)
+
+                    <a href="{{ route('landlord.listings.edit', $listing) }}"
+                    class="bg-yellow-500 hover:bg-yellow-600
+                            text-white font-medium px-3 py-2
+                            rounded-lg text-center">
                         Edit
                     </a>
 
-                    <button class="bg-red-600 hover:bg-red-700 text-white font-medium px-3 py-2 rounded-lg">
+                    <button
+                        type="button"
+                        onclick="openDeleteListingModal({{ $listing->id }})"
+                        class="bg-red-600 hover:bg-red-700
+                            text-white font-medium px-3 py-2
+                            rounded-lg">
                         Delete
                     </button>
 
-                </div>
+                @else
+                {{-- ICON-ONLY OPEN BUTTON --}}
+                <a href="{{ route('landlord.listings.show', $listing) }}"
+                onclick="event.stopPropagation()"
+                class="w-14 h-14
+                        rounded-full
+                        flex items-center justify-center
+                        text-gray-600
+                        hover:bg-gray-100 hover:text-gray-900
+                        transition ml-20"
+                title="Open listing">
 
+                    <i class="fa-solid fa-arrow-up-right-from-square text-lg"></i>
+                </a>
+            @endif
+            </div>
+        </div>
+
+
+    </div> {{-- END GRID --}}
+</div>
+@endforeach
+
+<h2 class="text-xl font-semibold mb-4 mt-14">Pending Approval</h2>
+
+@if($pendingListings->isEmpty())
+    <p class="text-gray-500 mb-6">No pending listings.</p>
+@endif
+
+@foreach($pendingListings as $listing)
+<div class="w-full bg-white rounded-xl shadow-sm overflow-hidden border mb-6 relative group">
+<a href="{{ route('landlord.listings.show', $listing) }}"
+   class="absolute inset-0 z-10"
+   aria-label="View listing details">
+</a>
+
+    <div class="grid grid-cols-12">
+
+        {{-- IMAGE --}}
+        <div class="col-span-3">
+            <img
+                src="{{ $listing->images->first()?->image_path
+                        ? asset('storage/'.$listing->images->first()->image_path)
+                        : asset('images/ocs-taman-placeholder.jpg') }}"
+                class="w-full h-48 object-cover">
+        </div>
+
+        {{-- CONTENT --}}
+        <div class="col-span-6 px-6 py-4">
+
+            <h2 class="font-semibold text-lg mb-1">
+                {{ $listing->title }}
+            </h2>
+
+            <p class="text-xs text-gray-600">
+                {{ $listing->address }}
+            </p>
+
+            @if($listing->distance_to_umpsa)
+                <div class="mt-2 bg-gray-100 inline-block text-xs px-2 py-1 rounded mb-2">
+                    <i class="fa-solid fa-location-dot mr-1 text-red-500"></i>
+                    {{ number_format($listing->distance_to_umpsa, 2) }} km from UMPSA
+                </div>
+            @endif
+
+            {{-- AMENITIES ICONS --}}
+            <div class="mt-2 flex items-center space-x-2 text-sm text-gray-600">
+                @foreach($listing->amenities ?? [] as $amenity)
+                    @if(isset($amenityIcons[$amenity]))
+                        <i class="fa-solid {{ $amenityIcons[$amenity] }}"
+                           title="{{ $amenity }}"></i>
+                    @endif
+                @endforeach
             </div>
 
+            {{-- BADGES --}}
+            <div class="flex flex-wrap gap-2 mt-3 text-xs">
+                @foreach($listing->badges as $badge)
+                    <span
+                        class="px-3 py-1 rounded-full border
+                            {{ $badge['style'] === 'green'
+                                ? 'bg-green-50 text-green-600'
+                                : 'bg-gray-100 text-gray-600' }}">
+                        {{ $badge['label'] }}
+                    </span>
+                @endforeach
+            </div>
 
+        </div> {{-- END CONTENT --}}
 
+        {{-- ACTIONS --}}
+        <div class="col-span-3 flex justify-end items-center pr-10 relative z-20">
+            <div class="w-28 flex flex-col gap-3">
+
+                <a href="{{ route('landlord.listings.edit', $listing) }}"
+                   class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium px-3 py-2 rounded-lg text-center">
+                    Edit
+                </a>
+
+                <form method="POST">
+                    @csrf
+                    @method('DELETE')
+
+                    <button
+                    type="button"
+                    onclick="openDeleteListingModal({{ $listing->id }})"
+                        class="bg-red-600 hover:bg-red-700 text-white font-medium px-3 py-2 rounded-lg w-full">
+                        Delete
+                    </button>
+                </form>
+
+            </div>
         </div>
-    </div>
-    @endforeach
+
+    </div> {{-- END GRID --}}
+</div>
+@endforeach
 
 </div>
+
 
 @endsection

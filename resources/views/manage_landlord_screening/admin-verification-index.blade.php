@@ -82,4 +82,88 @@
 
 </div>
 
+{{-- ================= LISTING VERIFICATION ================= --}}
+<h1 class="text-xl font-semibold mt-12 mb-6">
+    Listing Publishing Requests
+</h1>
+
+<div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
+
+    <table class="w-full text-sm">
+        <thead class="bg-blue-50">
+            <tr class="text-gray-600">
+                <th class="px-6 py-4 text-left">Property</th>
+                <th class="px-6 py-4 text-left">Landlord</th>
+                <th class="px-6 py-4 text-left">Submitted</th>
+                <th class="px-6 py-4 text-center">Status</th>
+                <th class="px-6 py-4 text-center">Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @forelse ($listings as $listing)
+                <tr class="border-b hover:bg-gray-50 transition">
+
+                    {{-- PROPERTY --}}
+                    <td class="px-6 py-5">
+                        <div class="flex items-center gap-4">
+
+                            <img
+                                src="{{ $listing->images->first()?->image_path
+                                    ? asset('storage/'.$listing->images->first()->image_path)
+                                    : asset('images/ocs-taman-placeholder.jpg') }}"
+                                class="w-14 h-14 rounded-lg object-cover border">
+
+                            <div>
+                                <p class="font-medium text-gray-900">
+                                    {{ $listing->title }}
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    {{ $listing->address }}
+                                </p>
+                            </div>
+
+                        </div>
+                    </td>
+
+                    {{-- LANDLORD --}}
+                    <td class="px-6 py-5 text-gray-700">
+                        {{ $listing->landlord->user->name }}
+                    </td>
+
+                    {{-- SUBMITTED --}}
+                    <td class="px-6 py-5 text-gray-600">
+                        {{ $listing->created_at->format('d M Y') }}
+                    </td>
+
+                    {{-- STATUS --}}
+                    <td class="px-6 py-5 text-center">
+                        <span class="px-3 py-1 text-xs rounded-full
+                                     bg-yellow-100 text-yellow-700 font-semibold">
+                            Pending
+                        </span>
+                    </td>
+
+                    {{-- ACTION --}}
+                    <td class="px-6 py-5 text-center">
+                        <a href="{{ route('admin.listings.show', $listing) }}"
+                           class="inline-flex items-center gap-2 text-blue-600 hover:underline">
+                            <i class="fa-solid fa-eye"></i>
+                            Review
+                        </a>
+                    </td>
+
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                        No pending listing requests
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+</div>
+
 @endsection

@@ -59,7 +59,7 @@ return new class extends Migration
                 'occupied',
                 'rejected'
             ])->default('pending');
-
+                    
             $table->timestamps();
         });
     

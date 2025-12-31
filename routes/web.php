@@ -122,7 +122,20 @@ Route::middleware(['auth', 'role:admin'])
         Route::post('/verifications/{landlord}/resubmission',
             [LandlordScreeningController::class, 'adminRequestResubmission']
         )->name('admin.verifications.resubmit');
-    });
+
+         // Listing verification
+        Route::get('/listings/{listing}', 
+            [RentalBookingController::class, 'adminListingShow']
+        )->name('admin.listings.show');
+
+        Route::post('/listings/{listing}/approve', 
+            [RentalBookingController::class, 'adminListingApprove']
+        )->name('admin.listings.approve');
+
+        Route::post('/listings/{listing}/reject', 
+            [RentalBookingController::class, 'adminListingReject']
+        )->name('admin.listings.reject');
+        });
 
 require __DIR__.'/auth.php';
 
@@ -150,33 +163,54 @@ Route::post(
     [RentalBookingController::class, 'saveListingDraft']
 )->name('landlord.listings.saveDraft');
 
+Route::get('/landlord/listings', [RentalBookingController::class, 'landlordListings'])
+    ->name('landlord.listings');
 
-
-
-
-// Step 2: Register as specific role
-Route::get('/register/ocs', [RegisteredUserController::class, 'createOcs'])->name('register.ocs');
-Route::get('/register/landlord', [RegisteredUserController::class, 'createLandlord'])->name('register.landlord');
-Route::get('/register/admin', [RegisteredUserController::class, 'createAdmin'])->name('register.admin');
-
-// Step 3: Store registration form (still same controller@store)
-Route::post('/register/ocs', [RegisteredUserController::class, 'storeOcs'])->name('register.ocs.store');
-Route::post('/register/landlord', [RegisteredUserController::class, 'storeLandlord'])->name('register.landlord.store');
-Route::post('/register/admin', [RegisteredUserController::class, 'storeAdmin'])->name('register.admin.store');
-
-// -------------------------
-// LANDLORD DASHBOARD ROUTES
-// -------------------------
-
-// Manage listings page (placeholder)
-Route::get('/landlord/listings', function () {
-    return view('manage_rental_booking.landlord-rentallist');
-})->name('landlord.listings');
-
-// Manage listings page (placeholder)
+    // Manage listings page (placeholder)
 Route::get('/landlord/create-listings', function () {
     return view('manage_rental_booking.create-listings-form');
 })->name('landlord.createlistings');
+
+Route::get(
+    '/landlord/listings/{listing}',
+    [RentalBookingController::class, 'show']
+)->name('landlord.listings.show');
+
+Route::get(
+    '/landlord/listings/{listing}/medias',
+    [RentalBookingController::class, 'showAllMedias']
+)->name('landlord.listings.media');
+
+// Edit page
+Route::get('/landlord/listings/{listing}/edit', [RentalBookingController::class, 'edit'])
+    ->name('landlord.listings.edit');
+
+// Update final publish
+Route::put('/landlord/listings/{listing}', [RentalBookingController::class, 'update'])
+    ->name('landlord.listings.update');
+
+Route::delete(
+    '/landlord/listings/media/{image}',
+    [RentalBookingController::class, 'deleteImage']
+)->name('landlord.listings.media.delete');
+
+Route::delete(
+    '/landlord/listings/{listing}/grant',
+    [RentalBookingController::class, 'deleteGrant']
+);
+
+Route::delete(
+    '/landlord/listings/{listing}',
+    [RentalBookingController::class, 'destroy']
+)->name('landlord.listings.destroy');
+
+;
+
+
+
+
+
+
 
 
 
@@ -198,6 +232,27 @@ Route::get('/ocs/property/details', function () {
 Route::get('/ocs/resources/pantry', function () {
     return view('ocs.resources-pantry');
 })->name('ocs.resources.pantry');
+
+
+
+
+
+// Step 2: Register as specific role
+Route::get('/register/ocs', [RegisteredUserController::class, 'createOcs'])->name('register.ocs');
+Route::get('/register/landlord', [RegisteredUserController::class, 'createLandlord'])->name('register.landlord');
+Route::get('/register/admin', [RegisteredUserController::class, 'createAdmin'])->name('register.admin');
+
+// Step 3: Store registration form (still same controller@store)
+Route::post('/register/ocs', [RegisteredUserController::class, 'storeOcs'])->name('register.ocs.store');
+Route::post('/register/landlord', [RegisteredUserController::class, 'storeLandlord'])->name('register.landlord.store');
+Route::post('/register/admin', [RegisteredUserController::class, 'storeAdmin'])->name('register.admin.store');
+
+// -------------------------
+// LANDLORD DASHBOARD ROUTES
+// -------------------------
+
+
+
 
 
 

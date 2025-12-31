@@ -9,6 +9,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\LandlordVerificationApproved;
 use App\Mail\LandlordVerificationRejected;
+use App\Models\Listing;
+
 
 
 class LandlordScreeningController extends Controller
@@ -403,7 +405,16 @@ class LandlordScreeningController extends Controller
             ->orderBy('screening_submitted_at', 'asc')
             ->get();
 
-        return view('manage_landlord_screening.admin-verification-index', compact('landlords'));
+        $listings = Listing::with([
+            'landlord',       // landlord model
+            'landlord.user',  // landlord → user
+            'images'
+        ])
+        ->where('status', 'pending')
+        ->orderBy('created_at', 'asc')
+        ->get();
+
+        return view('manage_landlord_screening.admin-verification-index', compact('landlords', 'listings'));
     }
 
     public function adminVerificationShow(\App\Models\Landlord $landlord)

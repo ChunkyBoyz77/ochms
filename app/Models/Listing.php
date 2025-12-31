@@ -36,11 +36,16 @@ class Listing extends Model
     ];
 
     /* ================= Relationships ================= */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function landlord()
     {
-        return $this->belongsTo(User::class, 'landlord_id');
+        return $this->belongsTo(\App\Models\Landlord::class, 'landlord_id');
     }
+
 
     public function student()
     {

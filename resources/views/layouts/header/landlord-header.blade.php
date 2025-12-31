@@ -37,12 +37,13 @@
                class="text-white font-medium hover:opacity-80">
                 Booking Requests
             </a>
-        @endif
-
+        
+        @else
         <a href="{{ route('landlord.dashboard') }}"
                class="text-white font-medium hover:opacity-80">
                 Dashboard
         </a>
+        @endif
     </div>
 
     <!-- RIGHT SECTION -->
