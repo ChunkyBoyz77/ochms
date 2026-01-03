@@ -24,9 +24,18 @@ return new class extends Migration
                   ->constrained('users')
                   ->nullOnDelete();
 
+            $table->foreignId('last_occupied_ocs_id')
+                  ->nullable()
+                  ->constrained('ocs')
+                  ->nullOnDelete();
+
             // Basic info
             $table->string('title');
             $table->enum('property_type', ['Room', 'Apartment', 'House']);
+            $table->unsignedTinyInteger('bedrooms')->default(0);
+            $table->unsignedTinyInteger('bathrooms')->default(0);
+            $table->unsignedTinyInteger('beds')->default(0);
+            $table->unsignedTinyInteger('max_occupants')->default(1);
             $table->text('description');
 
             // Location
@@ -56,7 +65,9 @@ return new class extends Migration
             $table->enum('status', [
                 'pending',
                 'published',
+                'requested',
                 'occupied',
+                'vacated',
                 'rejected'
             ])->default('pending');
 

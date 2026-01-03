@@ -33,11 +33,11 @@ $amenityIcons = [
 
 <h2 class="text-xl font-semibold mb-4 mt-5">Published Listings</h2>
 
-@if($publishedListings->isEmpty())
+@if($allListings->isEmpty())
     <p class="text-gray-500 mb-6">No approved listings yet.</p>
 @endif
 
-@foreach($publishedListings as $listing)
+@foreach($allListings as $listing)
 <div class="w-full bg-white rounded-xl shadow-sm overflow-hidden border mb-6 relative group">
 <a href="{{ route('landlord.listings.show', $listing) }}"
    class="absolute inset-0 z-10"
@@ -47,13 +47,38 @@ $amenityIcons = [
     <div class="grid grid-cols-12">
 
         {{-- IMAGE --}}
-        <div class="col-span-3">
+        <div class="col-span-3 relative">
+
             <img
                 src="{{ $listing->images->first()?->image_path
                         ? asset('storage/'.$listing->images->first()->image_path)
                         : asset('images/ocs-taman-placeholder.jpg') }}"
                 class="w-full h-48 object-cover">
+
+            {{-- ⭐ RATING BADGE --}}
+            @if($listing->reviews_count > 0)
+                <div
+                    class="absolute top-3 left-3
+                        bg-black/80 backdrop-blur
+                        text-white text-xs
+                        px-3 py-1.5 rounded-lg
+                        flex items-center gap-1.5
+                        shadow-md">
+
+                    <i class="fa-solid fa-star text-yellow-400"></i>
+
+                    <span class="font-semibold">
+                        {{ $listing->avg_rating }}
+                    </span>
+
+                    <span class="text-gray-300">
+                        ({{ $listing->reviews_count }})
+                    </span>
+                </div>
+            @endif
+
         </div>
+
 
         {{-- CONTENT --}}
         <div class="col-span-6 px-6 py-4">
@@ -84,8 +109,13 @@ $amenityIcons = [
             </div>
 
             {{-- BADGES --}}
+            @php
+                $visibleBadges = collect($listing->badges)->take(3);
+                $extraCount = collect($listing->badges)->count() - $visibleBadges->count();
+            @endphp
+
             <div class="flex flex-wrap gap-2 mt-3 text-xs">
-                @foreach($listing->badges as $badge)
+                @foreach($visibleBadges as $badge)
                     <span
                         class="px-3 py-1 rounded-full border
                             {{ $badge['style'] === 'green'
@@ -94,7 +124,14 @@ $amenityIcons = [
                         {{ $badge['label'] }}
                     </span>
                 @endforeach
+
+                @if($extraCount > 0)
+                    <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-500">
+                        +{{ $extraCount }} more
+                    </span>
+                @endif
             </div>
+
 
         </div> {{-- END CONTENT --}}
       

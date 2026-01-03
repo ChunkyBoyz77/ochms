@@ -1,4 +1,4 @@
-@extends('layouts.landlord')
+@extends('layouts.ocs')
 
 @section('title', $listing->title)
 
@@ -11,7 +11,7 @@
         <ol class="flex items-center flex-wrap gap-1">
 
             <li>
-                <a href="{{ route('landlord.dashboard') }}"
+                <a href="{{ route('home') }}"
                 class="hover:text-gray-700 transition">
                     Home
                 </a>
@@ -20,7 +20,7 @@
             <li class="mx-1 text-gray-400"><i class="fa-solid fa-chevron-right text-xs mx-1 text-gray-300"></i></li>
 
             <li>
-                <a href="{{ route('landlord.listings') }}"
+                <a href="{{ route('ocs.listings.browse') }}"
                 class="hover:text-gray-700 transition">
                     Listings
                 </a>
@@ -68,7 +68,6 @@
                 </span>
             </div>
             @endif
-
 
         </div>
 
@@ -143,7 +142,7 @@
         {{-- SEE ALL PHOTOS BUTTON --}}
         @if($listing->images->count() > 5)
             <a
-                href="{{ route('landlord.listings.media', $listing) }}"
+                href="{{ route('ocs.listings.media', $listing) }}"
                 class="absolute bottom-6 right-6
                     bg-black/80 hover:bg-black
                     text-white text-sm px-4 py-2
@@ -186,7 +185,7 @@
                 @endif
 
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-full bg-red-50 text-red-500
+                    <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500
                                 flex items-center justify-center">
                         <i class="fa-solid fa-house"></i>
                     </div>
@@ -202,7 +201,7 @@
 
         </div>
 
-        {{-- DESCRIPTION --}}
+                {{-- DESCRIPTION --}}
         <div class="bg-white rounded-2xl border shadow-sm p-6 mb-8">
 
             <h3 class="font-semibold text-2xl lg:text-2xl md:text-lg sm:text-base mb-4">
@@ -213,10 +212,10 @@
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
 
                 @if($listing->bedrooms)
-                <div class="flex items-center gap-3 bg-red-50 rounded-xl px-4 py-3">
-                    <i class="fa-solid fa-bed text-red-700"></i>
+                <div class="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                    <i class="fa-solid fa-bed text-gray-700"></i>
                     <div>
-                        <p class="font-semibold text-red-900">
+                        <p class="font-semibold text-gray-900">
                             {{ $listing->bedrooms }} Bedrooms
                         </p>
                     </div>
@@ -224,10 +223,10 @@
                 @endif
 
                 @if($listing->bathrooms)
-                <div class="flex items-center gap-3 bg-red-50 rounded-xl px-4 py-3">
-                    <i class="fa-solid fa-bath text-red-700"></i>
+                <div class="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                    <i class="fa-solid fa-bath text-gray-700"></i>
                     <div>
-                        <p class="font-semibold text-red-900">
+                        <p class="font-semibold text-gray-900">
                             {{ $listing->bathrooms }} Bathrooms
                         </p>
                     </div>
@@ -235,10 +234,10 @@
                 @endif
 
                 @if($listing->beds)
-                <div class="flex items-center gap-3 bg-red-50 rounded-xl px-4 py-3">
-                    <i class="fa-solid fa-bed-pulse text-red-700"></i>
+                <div class="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                    <i class="fa-solid fa-bed-pulse text-gray-700"></i>
                     <div>
-                        <p class="font-semibold text-red-900">
+                        <p class="font-semibold text-gray-900">
                             {{ $listing->beds }} Beds
                         </p>
                     </div>
@@ -246,10 +245,10 @@
                 @endif
 
                 @if($listing->max_occupants)
-                <div class="flex items-center gap-3 bg-red-50 rounded-xl px-4 py-3">
-                    <i class="fa-solid fa-users text-red-700"></i>
+                <div class="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                    <i class="fa-solid fa-users text-gray-700"></i>
                     <div>
-                        <p class="font-semibold text-red-900">
+                        <p class="font-semibold text-gray-900">
                             {{ $listing->max_occupants }} Max Occupants
                         </p>
                     </div>
@@ -267,7 +266,6 @@
             </p>
 
         </div>
-
 
     </div>
 
@@ -295,38 +293,63 @@
                     </span>
                 </div>
 
+
+                @php
+                    $ocs = auth()->user()?->ocs;
+
+                    $hasActiveRequest = $ocs
+                        ? \App\Models\Listing::where('ocs_id', $ocs->id)
+                            ->whereIn('status', ['requested', 'occupied'])
+                            ->exists()
+                        : false;
+                @endphp
+
                 {{-- CTA --}}
-                @if($listing->status === 'occupied')
-                    <button
-                        class="w-full bg-red-500 hover:bg-red-600
-                            text-white font-semibold py-3
-                            rounded-xl transition mb-3">
-                        Edit Listing
+                @auth
+                @if($listing->status === 'requested')
+                    <button disabled
+                        class="w-full bg-gray-300 text-gray-500
+                            font-semibold py-3 rounded-xl cursor-not-allowed">
+                        Booking Requested
                     </button>
 
-                    <button
-                        onclick="openTerminateModal({{ $listing->id }})"
-                        class="w-full bg-red-600 hover:bg-red-700
-                            text-white font-semibold py-3
-                            rounded-xl transition">
-                        Terminate Rent
+                @elseif($hasActiveRequest)
+                    <button disabled
+                        class="w-full bg-gray-300 text-gray-500
+                            font-semibold py-3 rounded-xl cursor-not-allowed mb-3">
+                        You already have an active request
                     </button>
+
                 @else
+                    <button
+                        onclick="openRequestBookingModal({{ $listing->id }})"
+                        class="w-full bg-gray-900 text-white
+                            font-semibold py-3 rounded-xl transition mb-3">
+                        Request Booking
+                    </button>
+                @endif
+                @endauth
 
-                <button
-                    class="w-full bg-red-500 hover:bg-red-600
-                           text-white font-semibold py-3
-                           rounded-xl transition mb-3">
-                    Edit Listing
-                </button>
+
+                @guest
+                     <a href="{{ route('home') }}"
+                        class="block w-full text-center
+                                bg-gray-900 text-white
+                                font-semibold py-3 rounded-xl
+                                hover:bg-gray-800 transition mb-3">
+                        Log in to Request Booking
+                    </a>
+                @endguest
+
+
 
                 <button
                     class="w-full border border-gray-300
-                           text-gray-700 py-3
-                           rounded-xl hover:bg-gray-50 transition">
-                    Delete Listing
+                        text-gray-700 py-3
+                        rounded-xl hover:bg-gray-50 transition">
+                    Contact Landlord
                 </button>
-                @endif
+
 
                 {{-- NOTE --}}
                 <p class="text-xs text-gray-500 text-center mt-4">
@@ -349,7 +372,7 @@
         {{-- TAB HEADERS --}}
         <div class="flex gap-8 border-b mb-8 font-medium text-gray-600">
             <button
-                class="pb-3 border-b-2 border-red-500 text-red-500 transition"
+                class="pb-3 border-b-2 border-black text-gray-900 transition"
                 data-tab="amenities">
                 Amenities
             </button>
@@ -556,7 +579,7 @@ $amenityGroups = [
 
         </div>
 
-        {{-- RATINGS & REVIEWS TAB --}}
+         {{-- RATINGS & REVIEWS TAB --}}
         <div data-tab-content="rating-review" class="hidden space-y-8">
 
             {{-- OVERALL RATING SUMMARY --}}
@@ -630,6 +653,7 @@ $amenityGroups = [
                                         -
                                         {{ $review->stay_until->format('M Y') }}
                                     </p>
+
                                 </div>
                             </div>
 
@@ -654,6 +678,7 @@ $amenityGroups = [
             @endif
 
         </div>
+
 
     </div>
 </div>
@@ -707,11 +732,11 @@ document.querySelectorAll('[data-tab]').forEach(tab => {
         const target = tab.dataset.tab;
 
         document.querySelectorAll('[data-tab]').forEach(t => {
-            t.classList.remove('border-red-500', 'text-red-500', 'border-b-2');
-            t.classList.add('text-gray-600');
+            t.classList.remove('border-black', 'text-gray-900', 'border-b-2');
+            t.classList.add('text-gray-500');
         });
 
-        tab.classList.add('border-red-500', 'text-red-500', 'border-b-2');
+        tab.classList.add('border-black', 'text-gray-900', 'border-b-2');
 
         document.querySelectorAll('[data-tab-content]').forEach(content => {
             content.classList.toggle(

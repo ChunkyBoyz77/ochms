@@ -1,4 +1,4 @@
- @php
+@php
     $initials = '';
     if (auth()->check()) {
         $names = explode(' ', auth()->user()->name);
@@ -9,111 +9,113 @@
     }
 @endphp
 
- 
- <nav id="mainNav"
-        class="fixed top-0 left-0 w-full z-50 px-10 py-4 flex items-center justify-between transition-all duration-200 bg-transparent">
+<nav id="mainNav"
+    class="sticky top-0 left-0 w-full z-50 px-10 py-4 flex items-center justify-between transition-all duration-200 bg-white shadow-md">
 
-        <!-- LEFT SECTION -->
-        <div class="flex items-center space-x-10">
-            <a href="{{ route('home') }}">
-                <img src="{{ asset('images/umpsa-logo.png') }}"
-                    id="navLogo"
-                    class="w-10 drop-shadow-md cursor-pointer"
-                    alt="Logo">
+    <!-- LEFT SECTION -->
+    <div class="flex items-center space-x-10">
+        <a href="{{ route('home') }}">
+            <img src="{{ asset('images/umpsa-logo.png') }}"
+                id="navLogo"
+                class="w-10 drop-shadow-md cursor-pointer"
+                alt="Logo">
+        </a>
+
+        <a href="{{ route('home') }}" class="nav-link font-regular text-gray drop-shadow text-lg hover:text-black-200 cursor-pointer">Home</a>
+        <a href="{{ route('ocs.listings.browse') }}" class="nav-link font-regular text-gray drop-shadow text-lg hover:text-black-200 cursor-pointer">Rentals</a>
+        <a class="nav-link font-regular text-gray drop-shadow text-lg hover:text-black-200 cursor-pointer">UMPSA Resources</a>
+    </div>
+
+
+    <!-- RIGHT SECTION -->
+    <div class="flex items-center space-x-4">
+
+        {{-- Become a landlord (hide for OCS) --}}
+        @guest
+            <a href="{{ route('landlord.become') }}" class="nav-link font-semibold text-gray drop-shadow text-lg cursor-pointer">
+                Become a landlord
             </a>
+        @endguest
 
-            <a href="{{ route('home') }}" class="nav-link font-regular text-white drop-shadow text-lg hover:text-black-200 cursor-pointer">Home</a>
-            <a class="nav-link font-regular text-white drop-shadow text-lg hover:text-black-200 cursor-pointer">Rentals</a>
-            <a class="nav-link font-regular text-white drop-shadow text-lg hover:text-black-200 cursor-pointer">UMPSA Resources</a>
-        </div>
-
-
-        <!-- RIGHT SECTION -->
-        <div class="flex items-center space-x-4">
-
-            {{-- Become a landlord (hide for OCS) --}}
-            @guest
-                <a href="{{ route('landlord.become') }}" class="nav-link font-semibold text-white drop-shadow text-lg cursor-pointer">
+        @auth
+            @if(auth()->user()->role !== 'ocs')
+                <a class="nav-link font-semibold text-gray drop-shadow text-lg cursor-pointer">
                     Become a landlord
                 </a>
-            @endguest
+            @endif
+        @endauth
 
-            @auth
-                @if(auth()->user()->role !== 'ocs')
-                    <a class="nav-link font-semibold text-white drop-shadow text-lg cursor-pointer">
-                        Become a landlord
+        <!-- Profile Button -->
+        <div class="relative">
+            <button id="profileButton"
+                class="flex items-center justify-center w-11 h-11 rounded-full transition
+                    bg-gray-100 hover:bg-gray-200 backdrop-blur">
+
+                @auth
+                    @if(auth()->user()->role === 'ocs')
+                        {{-- Avatar with initials --}}
+                        <span id="initials" class="text-gray font-semibold">
+                            {{ $initials }}
+                        </span>
+                    @else
+                        {{-- Hamburger for non-OCS --}}
+                        <i id="hamburgerIcon" class="fa-solid fa-bars text-gray text-xl"></i>
+                    @endif
+                @endauth
+
+                @guest
+                    <i id="hamburgerIcon" class="fa-solid fa-bars text-gray text-xl"></i>
+                @endguest
+            </button>
+
+            <!-- DROPDOWN MENU -->
+            <div id="profileMenu"
+                class="hidden absolute right-0 mt-3 bg-white shadow-lg rounded-xl w-60 py-2 z-50">
+
+                @guest
+                    <button onclick="openAuthModal()"
+                            class="block px-4 py-2 hover:bg-gray-100 w-full text-left">
+                        Log in or Sign up
+                    </button>
+                    <a href="{{ route('landlord.auth') }}"
+                    class="block px-4 py-2 hover:bg-gray-100 text-gray-800">
+                        OCHMS
+                        <span class="ml-1 align-baseline text-xs text-gray-500 relative top-1">
+                            Landlord
+                        </span>
                     </a>
-                @endif
-            @endauth
 
-            <!-- Profile Button -->
-            <div class="relative">
-                <button id="profileButton"
-                    class="flex items-center justify-center w-11 h-11 rounded-full transition
-                        bg-white/20 hover:bg-white/30 backdrop-blur">
+                    <!-- Hidden Admin Login -->
+                    <button id="adminLoginBtn"
+                            onclick="window.location='{{ route('admin.login') }}'"
+                            class="hidden px-4 py-2 text-left text-sm text-gray-500 hover:bg-gray-100 w-full">
+                        Admin Login
+                    </button>
+                @endguest
 
-                    @auth
-                        @if(auth()->user()->role === 'ocs')
-                            {{-- Avatar with initials --}}
-                            <span id="initials" class="text-white font-semibold">
-                                {{ $initials }}
-                            </span>
-                        @else
-                            {{-- Hamburger for non-OCS --}}
-                            <i id="hamburgerIcon" class="fa-solid fa-bars text-white text-xl"></i>
-                        @endif
-                    @endauth
 
-                    @guest
-                        <i id="hamburgerIcon" class="fa-solid fa-bars text-white text-xl"></i>
-                    @endguest
-                </button>
+                @auth
+                    <a href="{{ route('dashboard') }}" class="block px-4 py-2 hover:bg-gray-100">Dashboard</a>
 
-                <!-- DROPDOWN MENU -->
-                <div id="profileMenu"
-                    class="hidden absolute right-0 mt-3 bg-white shadow-lg rounded-xl w-60 py-2 z-50">
+                    <a href="{{ route('ocs.bookings.index') }}" class="block px-4 py-2 hover:bg-gray-100">Track Booking</a>
 
-                    @guest
-                        <button onclick="openAuthModal()"
-                                class="block px-4 py-2 hover:bg-gray-100 w-full text-left">
-                            Log in or Sign up
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button class="w-full text-left px-4 py-2 hover:bg-gray-100">
+                            Logout
                         </button>
-                        <a href="{{ route('landlord.auth') }}"
-                        class="block px-4 py-2 hover:bg-gray-100 text-gray-800">
-                            OCHMS
-                            <span class="ml-1 align-baseline text-xs text-gray-500 relative top-1">
-                                Landlord
-                            </span>
-                        </a>
+                    </form>
+                @endauth
 
-                        <!-- Hidden Admin Login -->
-                        <button id="adminLoginBtn"
-                                onclick="window.location='{{ route('admin.login') }}'"
-                                class="hidden px-4 py-2 text-left text-sm text-gray-500 hover:bg-gray-100 w-full">
-                            Admin Login
-                        </button>
-                    @endguest
-
-
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="block px-4 py-2 hover:bg-gray-100">Dashboard</a>
-
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button class="w-full text-left px-4 py-2 hover:bg-gray-100">
-                                Logout
-                            </button>
-                        </form>
-                    @endauth
-
-                </div>
             </div>
-
         </div>
 
-    </nav>
+    </div>
 
-    <!-- PROFILE DROPDOWN SCRIPT -->
+</nav>
+
+
+{{-- DROPDOWN SCRIPT (ONLY THIS JS IS NEEDED) --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const btn = document.getElementById('profileButton');
@@ -130,69 +132,7 @@
             });
         });
 
-        document.addEventListener('scroll', function () {
-
-        const nav = document.getElementById('mainNav');
-        const links = document.querySelectorAll('.nav-link');
-        const profileBtn = document.getElementById('profileButton');
-        const icon = document.getElementById('hamburgerIcon');
-        const initials = document.getElementById('initials');
-
-        if (window.scrollY > 52) {
-
-            // Navbar background
-            nav.classList.remove('bg-transparent');
-            nav.classList.add('bg-gray-100/90', 'shadow-md');
-
-            // Links to black
-            links.forEach(link => {
-                link.classList.remove('text-white', 'drop-shadow');
-                link.classList.add('text-gray-900');
-            });
-
-            // Icon to black
-            if (icon) {
-                icon.classList.remove('text-white');
-                icon.classList.add('text-gray-900');
-            }
-
-            // Change the ROUND BUTTON background (becomes light gray like Airbnb)
-            profileBtn.classList.remove('bg-white/20', 'hover:bg-white/30', 'backdrop-blur');
-            profileBtn.classList.add('bg-gray-300', 'hover:bg-gray-500');
-
-            if (initials) {
-                initials.classList.remove('text-white');
-                initials.classList.add('text-gray-900');
-            }
-
-        } else {
-
-            // Navbar back to transparent
-            nav.classList.add('bg-transparent');
-            nav.classList.remove('bg-gray-100/90', 'shadow-md');
-
-            // Links back to white
-            links.forEach(link => {
-                link.classList.add('text-white', 'drop-shadow');
-                link.classList.remove('text-gray-900');
-            });
-
-            if (icon) {
-                icon.classList.add('text-white');
-                icon.classList.remove('text-gray-900');
-            }
-            
-            // Restore the round button background (glass effect)
-            profileBtn.classList.remove('bg-gray-200', 'hover:bg-gray-300');
-            profileBtn.classList.add('bg-white/20', 'hover:bg-white/30', 'backdrop-blur');
-
-            if (initials) {
-                initials.classList.add('text-white');
-                initials.classList.remove('text-gray-900');
-            }
-
-        }
-    });
+        
 
     const authModal = document.getElementById('authModal');
     const modalBox = document.getElementById('authModalBox');
@@ -311,4 +251,4 @@
             openAuthModal();
         });
     </script>
-    @endif
+     @endif

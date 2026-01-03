@@ -33,7 +33,7 @@
                 Listings
             </a>
 
-            <a href="{{ route('landlord.bookings') }}"
+            <a href="{{ route('landlord.booking.requests') }}"
                class="text-white font-medium hover:opacity-80">
                 Booking Requests
             </a>

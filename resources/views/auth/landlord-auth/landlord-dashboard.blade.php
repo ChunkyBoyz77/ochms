@@ -34,7 +34,7 @@
                     <span>Add New Listing</span>
                 </a>
 
-                <a href="#"
+                <a href="{{ route('landlord.booking.requests') }}"
                    class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold px-6 py-3.5 rounded-xl hover:bg-white/20 transition-all duration-300">
                     <i class="fa-solid fa-calendar-check"></i>
                     <span>View All Bookings</span>
@@ -49,50 +49,6 @@
 <div class="mb-10">
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Overview</h2>
-        <div x-data="{ open: false, selected: 'This Month' }" class="relative w-56">
-            <!-- Trigger -->
-            <button
-                @click="open = !open"
-                class="w-full bg-white border border-gray-200 rounded-xl
-                    px-6 py-2.5 text-sm font-medium text-gray-700
-                    flex items-center justify-between
-                    shadow-sm hover:shadow transition
-                    focus:outline-none focus:ring-2 focus:ring-red-500">
-
-                <span x-text="selected"></span>
-                <i class="fa-solid fa-chevron-down text-xs"></i>
-            </button>
-
-            <!-- Dropdown -->
-            <div x-show="open"
-                @click.away="open = false"
-                x-transition
-                class="absolute z-50 mt-2 w-full
-                        bg-white rounded-xl shadow-lg border border-gray-100
-                        overflow-hidden">
-
-                <button
-                    @click="selected='This Month'; open=false"
-                    class="w-full text-left px-6 py-3 text-sm
-                        hover:bg-red-50 transition">
-                    This Month
-                </button>
-
-                <button
-                    @click="selected='Last Month'; open=false"
-                    class="w-full text-left px-6 py-3 text-sm
-                        hover:bg-red-50 transition">
-                    Last Month
-                </button>
-
-                <button
-                    @click="selected='This Year'; open=false"
-                    class="w-full text-left px-6 py-3 text-sm
-                        hover:bg-red-50 transition">
-                    This Year
-                </button>
-            </div>
-        </div>
 
     </div>
 
@@ -106,7 +62,7 @@
                 <span class="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-full">+12%</span>
             </div>
             <p class="text-sm text-gray-500 mb-1">Total Properties</p>
-            <h3 class="text-3xl font-bold text-gray-800">3</h3>
+            <h3 class="text-3xl font-bold text-gray-800">{{ $totalProperties }}</h3>
         </div>
 
         <!-- Active Listings -->
@@ -118,7 +74,7 @@
                 <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">Live</span>
             </div>
             <p class="text-sm text-gray-500 mb-1">Active Listings</p>
-            <h3 class="text-3xl font-bold text-gray-800">3</h3>
+            <h3 class="text-3xl font-bold text-gray-800">{{ $activeListings }}</h3>
         </div>
 
         <!-- Pending Bookings -->
@@ -130,7 +86,7 @@
                 <span class="text-xs font-medium text-yellow-600 bg-yellow-50 px-2.5 py-1 rounded-full">Action Required</span>
             </div>
             <p class="text-sm text-gray-500 mb-1">Pending Requests</p>
-            <h3 class="text-3xl font-bold text-gray-800">2</h3>
+            <h3 class="text-3xl font-bold text-gray-800">{{ $pendingRequests }}</h3>
         </div>
 
         <!-- Average Rating -->
@@ -142,7 +98,7 @@
                 <span class="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-full">Excellent</span>
             </div>
             <p class="text-sm text-gray-500 mb-1">Average Rating</p>
-            <h3 class="text-3xl font-bold text-gray-800">4.8 <span class="text-base text-gray-400 font-normal">/5.0</span></h3>
+            <h3 class="text-3xl font-bold text-gray-800">{{ $averageRating ?? '—' }}<span class="text-base text-gray-400 font-normal">/5.0</span></h3>
         </div>
     </div>
 </div>
@@ -178,7 +134,7 @@
             </a>
 
             <!-- Booking Requests -->
-            <a href="#"
+            <a href="{{ route('landlord.booking.requests') }}" 
                class="group bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-2xl shadow-lg hover:shadow-xl p-8 transition-all duration-300 hover:scale-105 relative overflow-hidden">
                 
                 <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-8 -translate-y-8"></div>
@@ -193,41 +149,21 @@
                     </h3>
                     
                     <p class="text-white/80 text-sm leading-relaxed">
-                        Review and respond to student inquiries and requests.
+                        Review and respond to student booking requests.
                     </p>
                     
-                    @if(true) {{-- Replace with actual pending count check --}}
+                    @if($pendingRequests > 0)
                     <span class="absolute top-4 right-4 bg-white text-yellow-600 text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
-                        2 New
+                       {{ $pendingRequests }} New
                     </span>
                     @endif
                 </div>
             </a>
 
-            <!-- Earnings -->
-            <a href="#"
-               class="group bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-2xl shadow-lg hover:shadow-xl p-8 transition-all duration-300 hover:scale-105 relative overflow-hidden">
-                
-                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-8 -translate-y-8"></div>
-                
-                <div class="relative z-10">
-                    <div class="bg-white/20 backdrop-blur-sm w-14 h-14 rounded-xl flex items-center justify-center mb-4">
-                        <i class="fa-solid fa-wallet text-white text-2xl"></i>
-                    </div>
-                    
-                    <h3 class="text-white font-bold text-xl mb-2">
-                        Earnings
-                    </h3>
-                    
-                    <p class="text-white/80 text-sm leading-relaxed">
-                        Track your income, payments, and financial analytics.
-                    </p>
-                </div>
-            </a>
 
             <!-- Profile Settings -->
             <a href="#"
-               class="group bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-2xl shadow-lg hover:shadow-xl p-8 transition-all duration-300 hover:scale-105 relative overflow-hidden">
+               class="group bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-2xl shadow-lg hover:shadow-xl p-8 transition-all duration-300 hover:scale-105 relative overflow-hidden">
                 
                 <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-8 -translate-y-8"></div>
                 
@@ -241,7 +177,7 @@
                     </h3>
                     
                     <p class="text-white/80 text-sm leading-relaxed">
-                        Update account details and notification preferences.
+                        Update account details.
                     </p>
                 </div>
             </a>
@@ -254,66 +190,51 @@
         
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div class="space-y-5">
-                <!-- Activity Item -->
-                <div class="flex gap-4">
-                    <div class="bg-blue-100 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-calendar-check text-sm"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-800">New booking request</p>
-                        <p class="text-xs text-gray-500 mt-1">2 hours ago</p>
-                    </div>
-                </div>
+                @forelse($activities as $activity)
+                    <div class="flex gap-4">
+                        {{-- ICON --}}
+                        <div
+                            class="
+                                w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
+                                {{ $activity['type'] === 'booking'
+                                    ? 'bg-blue-100 text-blue-600'
+                                    : 'bg-green-100 text-green-600' }}
+                            ">
+                            <i class="fa-solid
+                                {{ $activity['type'] === 'booking'
+                                    ? 'fa-calendar-check'
+                                    : 'fa-star' }}">
+                            </i>
+                        </div>
 
-                <div class="border-t border-gray-100"></div>
+                        {{-- CONTENT --}}
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-800">
+                                {{ $activity['title'] }}
+                            </p>
 
-                <!-- Activity Item -->
-                <div class="flex gap-4">
-                    <div class="bg-green-100 text-green-600 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-star text-sm"></i>
+                            <p class="text-xs text-gray-500">
+                                {{ $activity['subtitle'] }}
+                                · {{ \Carbon\Carbon::parse($activity['created_at'])->diffForHumans() }}
+                            </p>
+                        </div>
                     </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-800">New review received</p>
-                        <p class="text-xs text-gray-500 mt-1">5 hours ago</p>
-                    </div>
-                </div>
 
-                <div class="border-t border-gray-100"></div>
+                    <div class="border-t border-gray-100"></div>
 
-                <!-- Activity Item -->
-                <div class="flex gap-4">
-                    <div class="bg-red-100 text-red-600 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-house text-sm"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-800">Listing published</p>
-                        <p class="text-xs text-gray-500 mt-1">1 day ago</p>
-                    </div>
-                </div>
+                    @empty
+                    <p class="text-sm text-gray-500 text-center">
+                        No recent activity
+                    </p>
+                    @endforelse
 
-                <div class="border-t border-gray-100"></div>
-
-                <!-- Activity Item -->
-                <div class="flex gap-4">
-                    <div class="bg-purple-100 text-purple-600 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-dollar-sign text-sm"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-800">Payment received</p>
-                        <p class="text-xs text-gray-500 mt-1">2 days ago</p>
-                    </div>
-                </div>
             </div>
-
-            <a href="#" class="block mt-6 text-center text-sm font-medium text-red-500 hover:text-red-600 transition">
-                View All Activity →
-            </a>
         </div>
 
         <!-- Tips Card -->
         <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-6 mt-6">
             <div class="flex items-start gap-3">
-                <div class="bg-blue-500 text-white w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div class="bg-red-500 text-white w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
                     <i class="fa-solid fa-lightbulb"></i>
                 </div>
                 <div>

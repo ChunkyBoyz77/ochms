@@ -9,8 +9,13 @@ class Listing extends Model
     protected $fillable = [
         'landlord_id',
         'ocs_id',
+        'last_occupied_ocs_id',
         'title',
         'property_type',
+        'bedrooms',
+        'bathrooms',
+        'beds',
+        'max_occupants',
         'description',
         'address',
         'latitude',
@@ -26,6 +31,7 @@ class Listing extends Model
         'policy_additional',
         'grant_document_path',
         'status',
+        'published_at',
     ];
 
     protected $casts = [
@@ -47,13 +53,25 @@ class Listing extends Model
     }
 
 
-    public function student()
+    public function ocs()
     {
-        return $this->belongsTo(User::class, 'student_id');
+        return $this->belongsTo(\App\Models\Ocs::class, 'ocs_id');
     }
 
     public function images()
     {
         return $this->hasMany(ListingImage::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(\App\Models\Review::class);
+    }
+
+    public function averageRating()
+    {
+        return round($this->reviews()->avg('rating'), 1);
+    }
+
+
 }

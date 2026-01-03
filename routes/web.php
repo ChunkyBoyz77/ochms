@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LandlordScreeningController;
 use App\Http\Controllers\RentalBookingController;
+use App\Http\Controllers\RatingReviewController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisteredUserController;
 
@@ -204,34 +206,116 @@ Route::delete(
     [RentalBookingController::class, 'destroy']
 )->name('landlord.listings.destroy');
 
-;
-
-
-
-
-
-
-
-
 
 // Manage booking requests page (placeholder)
 Route::get('/landlord/bookings', function () {
     return view('landlord.bookings');
 })->name('landlord.bookings');
 
+Route::get('/rentals', [RentalBookingController::class, 'browse'])
+    ->name('ocs.listings.browse');
 
-Route::get('/ocs/rentals', function () {
-    return view('ocs.search-results');
+Route::get('/rentals/map', [RentalBookingController::class, 'browseMap'])
+    ->name('ocs.rentals.map');
+
+Route::get('/rentals/{area}', [RentalBookingController::class, 'browse'])
+    ->name('ocs.listings.byArea');
+
+
+Route::get('/rentals/listing/{listing}', [RentalBookingController::class, 'ocsShow'])
+    ->name('ocs.listings.show');
+
+Route::get(
+    '/rentals/listings/{listing}/medias',
+    [RentalBookingController::class, 'showAllMediasOcs']
+)->name('ocs.listings.media');
+
+Route::post(
+    '/ocs/listings/{listing}/request',
+    [RentalBookingController::class, 'requestBooking']
+)->name('ocs.listings.request');
+
+Route::middleware(['auth', 'role:landlord'])->group(function () {
+
+    Route::get(
+        '/landlord/booking-requests',
+        [RentalBookingController::class, 'landlordBookingRequests']
+    )->name('landlord.booking.requests');
+
+    Route::get(
+        '/landlord/booking-requests/{listing}',
+        [RentalBookingController::class, 'landlordBookingShow']
+    )->name('landlord.bookings.show');
+
+    Route::post(
+        '/landlord/booking-requests/{listing}/approve',
+        [RentalBookingController::class, 'approveBooking']
+    )->name('landlord.bookings.approve');
+
+    Route::post(
+        '/landlord/booking-requests/{listing}/reject',
+        [RentalBookingController::class, 'rejectBooking']
+    )->name('landlord.bookings.reject');
+
 });
 
-Route::get('/ocs/property/details', function () {
-    return view('ocs.property-details');
-})->name('ocs.property.details');
+// routes/web.php
+
+Route::middleware(['auth'])
+    ->prefix('ocs')
+    ->name('ocs.')
+    ->group(function () {
+
+        Route::get('/bookings', 
+            [RentalBookingController::class, 'myBookingRequests']
+        )->name('bookings.index');
+
+    });
+
+Route::middleware(['auth'])->group(function () {
+
+    Route::post(
+        '/landlord/listings/{listing}/terminate',
+        [RentalBookingController::class, 'terminateRent']
+    )->name('landlord.listings.terminate');
+
+});
+
+// routes/web.php
+Route::middleware(['auth', 'role:ocs'])->group(function () {
+    Route::get(
+        '/ocs/listings/{listing}/review',
+        [RatingReviewController::class, 'create']
+    )->name('ocs.reviews.create');
+
+    Route::post(
+        '/ocs/listings/{listing}/review',
+        [RatingReviewController::class, 'store']
+    )->name('ocs.reviews.store');
+
+    Route::get('/reviews/{review}/edit', [RatingReviewController::class, 'edit'])
+        ->name('ocs.reviews.edit');
+
+    Route::put('/reviews/{review}', [RatingReviewController::class, 'update'])
+        ->name('ocs.reviews.update');
+
+    Route::delete('/reviews/{review}', [RatingReviewController::class, 'destroy'])
+        ->name('ocs.reviews.destroy');
+});
+
+Route::middleware(['auth', 'role:landlord'])
+    ->get('/landlord/dashboard', [DashboardController::class, 'landlordIndex'])
+    ->name('landlord.dashboard');
 
 
-Route::get('/ocs/resources/pantry', function () {
-    return view('ocs.resources-pantry');
-})->name('ocs.resources.pantry');
+
+
+
+
+
+
+
+
 
 
 

@@ -4,10 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Listing;
 use App\Models\ListingImage;
+use App\Models\Review;
 use App\Services\ListingBadgeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BookingApprovedMail;
+use App\Mail\BookingRejectedMail;
+use Illuminate\Support\Facades\DB;
 
 class RentalBookingController extends Controller
 {
@@ -75,6 +81,10 @@ public function createListing(Request $request)
     $validated = $request->validate([
         'title' => ['required', 'string', 'max:255'],
         'property_type' => ['required', 'in:Room,Apartment,House'],
+        'bedrooms' => ['required', 'integer', 'min:0'],
+        'bathrooms' => ['required', 'integer', 'min:0'],
+        'beds' => ['required', 'integer', 'min:0'],
+        'max_occupants' => ['required', 'integer', 'min:1'],
         'description' => ['required', 'string'],
         'address' => ['required', 'string'],
 
@@ -94,6 +104,12 @@ public function createListing(Request $request)
         'policy_additional' => ['nullable', 'string'],
     ]);
 
+    if ($validated['property_type'] === 'Room') {
+        $validated['bedrooms'] = 1;
+        $validated['beds'] = 1;
+        $validated['max_occupants'] = 1;
+    }
+
     /*
     |--------------------------------------------------------------------------
     | 2. Create Listing (no media yet)
@@ -104,6 +120,10 @@ public function createListing(Request $request)
         'student_id' => null,
         'title' => $validated['title'],
         'property_type' => $validated['property_type'],
+        'bedrooms' => $validated['bedrooms'],
+        'bathrooms' => $validated['bathrooms'],
+        'beds' => $validated['beds'],
+        'max_occupants' => $validated['max_occupants'],
         'description' => $validated['description'],
         'address' => $validated['address'],
         'latitude' => $validated['latitude'] ?? null,
@@ -208,21 +228,29 @@ public function landlordListings()
         ->map(function ($listing) {
             $listing->badges = ListingBadgeService::resolve($listing);
             return $listing;
+        })
+        ->each(function ($listing) {
+            $listing->avg_rating = round($listing->reviews->avg('rating'), 1);
+            $listing->reviews_count = $listing->reviews->count();
         });
 
-    $publishedListings = Listing::with(['images'])
+    $allListings = Listing::with(['images'])
         ->where('landlord_id', $landlordId)
-        ->where('status', 'published')
+        ->whereNotIn('status', ['pending'])
         ->latest()
         ->get()
         ->map(function ($listing) {
             $listing->badges = ListingBadgeService::resolve($listing);
             return $listing;
+        })
+        ->each(function ($listing) {
+            $listing->avg_rating = round($listing->reviews->avg('rating'), 1);
+            $listing->reviews_count = $listing->reviews->count();
         });
 
     return view('manage_rental_booking.landlord-rentallist', compact(
         'pendingListings',
-        'publishedListings'
+        'allListings'
     ));
 }
 
@@ -230,9 +258,36 @@ public function show(Listing $listing)
 {
     abort_if($listing->landlord_id !== Auth::user()->landlord->id, 403);
 
-    $listing->badges = \App\Services\ListingBadgeService::resolve($listing);
+    $listing->load([
+        'images',
+        'reviews.ocs.user', // ✅ THIS WAS MISSING
+    ]);
 
-    return view('manage_rental_booking.landlord-property-details', compact('listing'));
+    $reviews = $listing->reviews;
+    
+    $listing->badges = \App\Services\ListingBadgeService::resolve($listing);
+    $reviewCount = $reviews->count();
+    $averageRating = $reviewCount > 0
+        ? round($reviews->avg('rating'), 1)
+        : 0;
+
+    // Rating distribution (1–5 stars)
+    $ratingBreakdown = collect([1,2,3,4,5])->mapWithKeys(function ($star) use ($reviews, $reviewCount) {
+        $count = $reviews->where('rating', $star)->count();
+        return [
+            $star => $reviewCount
+                ? round(($count / $reviewCount) * 100)
+                : 0
+        ];
+    });
+
+    return view('manage_rental_booking.landlord-property-details', compact(
+        'listing',
+        'reviews',
+        'reviewCount',
+        'averageRating',
+        'ratingBreakdown'
+    ));
 }
 
 public function showAllMedias(Listing $listing)
@@ -260,6 +315,11 @@ public function update(Request $request, Listing $listing)
     $validated = $request->validate([
         'title' => ['required', 'string', 'max:255'],
         'property_type' => ['required', 'in:Room,Apartment,House'],
+        'bedrooms' => ['required', 'integer', 'min:0'],
+        'bathrooms' => ['required', 'integer', 'min:0'],
+        'beds' => ['required', 'integer', 'min:0'],
+        'max_occupants' => ['required', 'integer', 'min:1'],
+
         'description' => ['required', 'string'],
         'address' => ['required', 'string'],
 
@@ -287,6 +347,10 @@ public function update(Request $request, Listing $listing)
     $listing->update([
         'title' => $validated['title'],
         'property_type' => $validated['property_type'],
+        'bedrooms' => $validated['bedrooms'],
+        'bathrooms' => $validated['bathrooms'],
+        'beds' => $validated['beds'],
+        'max_occupants' => $validated['max_occupants'],
         'description' => $validated['description'],
         'address' => $validated['address'],
         'latitude' => $validated['latitude'] ?? null,
@@ -491,9 +555,198 @@ public function adminListingReject(Request $request, Listing $listing)
 }
 
 
+public function browse(Request $request, ?string $area = null)
+{
+    $umpsaLat = 3.5435;
+    $umpsaLng = 103.4289;
+
+    // ✅ Always define areaName (prevents undefined variable issues)
+    $areaName = 'All Areas';
+
+    // 1️⃣ Base query — ALWAYS all published listings
+    $query = Listing::query()
+        ->where('status', 'published')
+        ->whereNotNull('latitude')
+        ->whereNotNull('longitude');
+
+    // 2️⃣ Optional: area from URL
+    if ($area) {
+        $areaName = \Str::title(str_replace('-', ' ', $area));
+        $query->where('address', 'LIKE', "%{$areaName}%");
+    }
+
+    // 3️⃣ Optional: search bar
+    if ($request->filled('q')) {
+        $search = $request->q;
+        $query->where(function ($q) use ($search) {
+            $q->where('title', 'LIKE', "%{$search}%")
+              ->orWhere('address', 'LIKE', "%{$search}%");
+        });
+    }
+
+    // 4️⃣ Optional: property type filter
+    if ($request->filled('type')) {
+        $query->whereIn('property_type', (array) $request->type);
+    }
+
+    // 5️⃣ Optional: amenities filter
+    if ($request->filled('amenities')) {
+        foreach ((array) $request->amenities as $amenity) {
+            $query->whereJsonContains('amenities', $amenity);
+        }
+    }
+
+    // 6️⃣ Optional: price filter
+    if ($request->filled('max_price')) {
+        $query->where('monthly_rent', '<=', $request->max_price);
+    }
+
+    // 7️⃣ Distance calculation (Haversine)
+    $query->select('*')->selectRaw("
+        6371 * acos(
+            cos(radians(?)) *
+            cos(radians(latitude)) *
+            cos(radians(longitude) - radians(?)) +
+            sin(radians(?)) *
+            sin(radians(latitude))
+        ) AS distance_to_umpsa
+    ", [$umpsaLat, $umpsaLng, $umpsaLat]);
+
+    $query->orderBy('distance_to_umpsa');
+
+    // 8️⃣ Pagination
+    $listings = $query
+        ->with(['images'])
+        ->withAvg('reviews', 'rating')
+        ->withCount('reviews')
+        ->where('status', 'published')
+        ->paginate(6)
+        ->withQueryString();
+
+    // ✅ 9️⃣ ATTACH BADGES (THIS IS THE FIX)
+    $listings->getCollection()->transform(function ($listing) {
+        $listing->badges = \App\Services\ListingBadgeService::resolve($listing);
+        return $listing;
+    });
+
+    return view('manage_rental_booking.ocs-browse-listing', [
+        'listings' => $listings,
+        'areaName' => $areaName,
+    ]);
+}
 
 
 
+public function ocsShow(Listing $listing)
+{
+    abort_if($listing->status !== 'published', 404);
+
+    $listing->load([
+        'images',
+        'landlord.user',
+        'reviews.ocs.user',
+    ]);
+
+    $reviews = $listing->reviews;
+
+    $listing->badges = \App\Services\ListingBadgeService::resolve($listing);
+    $reviewCount = $reviews->count();
+    $averageRating = $reviewCount > 0
+        ? round($reviews->avg('rating'), 1)
+        : 0;
+
+    // Rating distribution (1–5 stars)
+    $ratingBreakdown = collect([1,2,3,4,5])->mapWithKeys(function ($star) use ($reviews, $reviewCount) {
+        $count = $reviews->where('rating', $star)->count();
+        return [
+            $star => $reviewCount
+                ? round(($count / $reviewCount) * 100)
+                : 0
+        ];
+    });
+
+    return view('manage_rental_booking.ocs-property-details', compact(
+        'listing',
+        'reviews',
+        'reviewCount',
+        'averageRating',
+        'ratingBreakdown'
+    ));
+}
+
+public function browseMap(Request $request)
+{
+    $umpsaLat = 3.5435;
+    $umpsaLng = 103.4289;
+
+    $areaName = 'All Areas';
+
+    // Copy the exact same query logic from browse()
+    $query = Listing::query()
+        ->where('status', 'published')
+        ->whereNotNull('latitude')
+        ->whereNotNull('longitude');
+
+    if ($request->filled('q')) {
+        $search = $request->q;
+        $query->where(function ($q) use ($search) {
+            $q->where('title', 'LIKE', "%{$search}%")
+              ->orWhere('address', 'LIKE', "%{$search}%");
+        });
+    }
+
+    if ($request->filled('type')) {
+        $query->whereIn('property_type', (array) $request->type);
+    }
+
+    if ($request->filled('amenities')) {
+        foreach ((array) $request->amenities as $amenity) {
+            $query->whereJsonContains('amenities', $amenity);
+        }
+    }
+
+    if ($request->filled('max_price')) {
+        $query->where('monthly_rent', '<=', $request->max_price);
+    }
+
+    $query->select('*')->selectRaw("
+        6371 * acos(
+            cos(radians(?)) *
+            cos(radians(latitude)) *
+            cos(radians(longitude) - radians(?)) +
+            sin(radians(?)) *
+            sin(radians(latitude))
+        ) AS distance_to_umpsa
+    ", [$umpsaLat, $umpsaLng, $umpsaLat]);
+
+    $query->orderBy('distance_to_umpsa');
+
+    // Get ALL results (not paginated)
+    $listings = $query
+        ->with(['images'])
+        ->withAvg('reviews', 'rating')
+        ->withCount('reviews')
+        ->get();
+
+    // Attach badges
+    $listings->transform(function ($listing) {
+        $listing->badges = \App\Services\ListingBadgeService::resolve($listing);
+        return $listing;
+    });
+
+    return view('manage_rental_booking.ocs-browse-map', [
+        'listings' => $listings,
+        'areaName' => $areaName,
+    ]);
+}
+
+public function showAllMediasOcs(Listing $listing)
+{
+    return view(
+        'manage_rental_booking.ocs-listing-medias',
+        compact('listing')
+    );
+}
 
 
 
@@ -504,27 +757,186 @@ public function adminListingReject(Request $request, Listing $listing)
 
     public function requestBooking(Request $request, Listing $listing)
     {
-        // Placeholder
-        // Will create a booking request record
+        abort_if($listing->status !== 'published', 403);
+
+        $user = Auth::user();
+        abort_if(!$user || !$user->ocs, 403);
+
+        $ocsId = $user->ocs->id;
+
+        //Check if this OCS already has an active request
+        $hasActiveRequest = Listing::where('ocs_id', $ocsId)
+            ->whereIn('status', ['requested', 'occupied'])
+            ->exists();
+
+        if ($hasActiveRequest) {
+            return redirect()
+                ->route('ocs.listings.browse', $listing)
+                ->with('success', 'Booking request submitted successfully.');
+        }
+
+        $listing->update([
+            'status' => 'requested',
+            'ocs_id' => $ocsId,
+        ]);
+
+        return redirect()
+            ->route('ocs.listings.browse', $listing)
+            ->with('success', 'Booking request submitted successfully.');
     }
 
-    /* ===================================================== */
-    /* LANDLORD: APPROVE BOOKING                             */
-    /* ===================================================== */
 
-    public function approveBooking(Request $request)
-    {
-        // Placeholder
-        // Assign student_id + mark listing as occupied
-    }
+    public function landlordBookingRequests()
+{
+    $landlordId = Auth::user()->landlord->id;
 
-    /* ===================================================== */
-    /* LANDLORD: REJECT BOOKING                              */
-    /* ===================================================== */
+    $requests = Listing::with([
+            'images',
+            'ocs.user',
+        ])
+        ->where('landlord_id', $landlordId)
+        ->where('status', 'requested')
+        ->latest()
+        ->get();
 
-    public function rejectBooking(Request $request)
-    {
-        // Placeholder
-    }
+    return view(
+        'manage_rental_booking.landlord-request-index',
+        compact('requests')
+    );
+}
+
+
+/* ===================================================== */
+/* LANDLORD: VIEW SINGLE BOOKING REQUEST                 */
+/* ===================================================== */
+
+public function landlordBookingShow(Listing $listing)
+{
+    abort_if(
+        $listing->landlord_id !== Auth::user()->landlord->id,
+        403
+    );
+
+    abort_if($listing->status !== 'requested', 404);
+
+    $listing->load([
+        'images',
+        'ocs.user',
+    ]);
+
+    return view(
+        'manage_rental_booking.landlord-review-request',
+        compact('listing')
+    );
+}
+
+
+/* ===================================================== */
+/* LANDLORD: APPROVE BOOKING                             */
+/* ===================================================== */
+
+public function approveBooking(Listing $listing)
+{
+    abort_if(
+        $listing->landlord_id !== Auth::user()->landlord->id,
+        403
+    );
+
+    abort_if($listing->status !== 'requested', 400);
+
+    $listing->update([
+        'status' => 'occupied',
+    ]);
+
+     Mail::to($listing->ocs->user->email)
+        ->send(new BookingApprovedMail($listing));
+
+    return redirect()
+        ->route('landlord.booking.requests')
+        ->with('request_success', 'Booking approved successfully.');
+}
+
+
+/* ===================================================== */
+/* LANDLORD: REJECT BOOKING                              */
+/* ===================================================== */
+
+public function rejectBooking(Request $request, Listing $listing)
+{
+    abort_if(
+        $listing->landlord_id !== Auth::user()->landlord->id,
+        403
+    );
+
+    abort_if($listing->status !== 'requested', 400);
+
+    $listing->update([
+        'status' => 'published',
+        'ocs_id' => null,
+    ]);
+
+    Mail::to($ocs->user->email)
+        ->send(new BookingRejectedMail($listing, $reason));
+
+    return redirect()
+        ->route('landlord.booking.requests')
+        ->with('request_error', 'Booking request rejected.');
+}
+
+public function myBookingRequests()
+{
+    // Must be OCS
+    abort_if(!Auth::user()->ocs, 403);
+
+    $ocsId = Auth::user()->ocs->id;
+
+    $listings = Listing::with(['images', 'landlord.user', 'reviews'])
+        ->where(function ($query) use ($ocsId) {
+                $query->where('ocs_id', $ocsId)
+                    ->orWhere('last_occupied_ocs_id', $ocsId);
+            })
+        ->whereIn('status', ['requested', 'approved', 'rejected', 'published', 'occupied'])
+        ->latest()
+        ->get();
+
+    $reviews = Review::with('listing.images')
+        ->where('ocs_id', $ocsId)
+        ->latest()
+        ->get();
+
+    return view(
+        'manage_rental_booking.ocs-booking-tracker',
+        compact('listings','reviews')
+    );
+}
+
+public function terminateRent(Request $request, Listing $listing)
+{
+    // Ownership check
+    abort_if(
+        $listing->landlord_id !== auth()->user()->landlord->id,
+        403
+    );
+
+    // Only occupied listings can be terminated
+    abort_if($listing->status !== 'occupied', 400);
+
+    DB::transaction(function () use ($listing) {
+
+        $listing->update([
+            'last_occupied_ocs_id' => $listing->ocs_id,
+            'ocs_id' => null,
+            'status' => 'published',
+        ]);
+
+    });
+
+    return redirect()
+        ->route('landlord.listings')
+        ->with('success', 'Tenancy terminated. Listing is now available again.');
+}
+
+
+
 }
 

@@ -185,6 +185,71 @@ HTML;
                 </div>
             </div>
 
+                        {{-- PROPERTY LAYOUT --}}
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+
+                <div>
+                    <label for="bedrooms" class="block text-sm font-medium text-gray-700 mb-1">
+                        Number of Bedrooms
+                    </label>
+
+                    <input
+                        type="number"
+                        value="{{ old('bedrooms', $listing->bedrooms) }}"
+                        name="bedrooms"
+                        id="bedrooms"
+                        min="0"
+                        placeholder="Number of Bedrooms e.g. 3"
+                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label for="bedrooms" class="block text-sm font-medium text-gray-700 mb-1">
+                        Number of Bathrooms
+                    </label>
+
+                    <input
+                        type="number"
+                        value="{{ old('bathrooms', $listing->bathrooms) }}"
+                        name="bathrooms"
+                        id="bathrooms"
+                        min="0"
+                        placeholder="Number of Bathrooms e.g. 2"
+                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label for="bedrooms" class="block text-sm font-medium text-gray-700 mb-1">
+                        Number of Bed
+                    </label>
+
+                    <input
+                        type="number"
+                        value="{{ old('beds', $listing->beds) }}"
+                        name="beds"
+                        id="beds"
+                        min="0"
+                        placeholder="Number of Beds e.g. 4"
+                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label for="bedrooms" class="block text-sm font-medium text-gray-700 mb-1">
+                        Max Occupants
+                    </label>
+
+                    <input
+                        type="number"
+                        value="{{ old('max_occupants', $listing->max_occupants) }}"
+                        name="max_occupants"
+                        id="max_occupants"
+                        min="1"
+                        placeholder="Max Occupant e.g. 5"
+                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                </div>
+
+            </div>
+
 
            <div class="relative">
             <!-- BORDER WRAPPER (Tailwind controls everything) -->
@@ -794,6 +859,16 @@ rentInput?.addEventListener('input', validateDeposit);
 async function saveSection(section, btn) {
     console.group(`📦 Saving section: ${section}`);
 
+    if (section === 'basic') {
+        const type = document.querySelector('[name="property_type"]')?.value;
+
+        if (type === 'Room') {
+            document.getElementById('bedrooms').value = 1;
+            document.getElementById('beds').value = 1;
+            document.getElementById('max_occupants').value = 1;
+        }
+    }
+
     if (section === 'pricing' && !validateDeposit()) {
         alert('Deposit cannot exceed 200% of the monthly rent.');
         return;
@@ -1318,6 +1393,59 @@ function deleteExistingGrant(listingId) {
         alert('Failed to delete document');
     });
 }
+
+
+function validateLayout() {
+    const beds = +document.querySelector('[name="beds"]')?.value || 0;
+    const bedrooms = +document.querySelector('[name="bedrooms"]')?.value || 0;
+    const occupants = +document.querySelector('[name="max_occupants"]')?.value || 0;
+
+    if (beds && bedrooms && beds < bedrooms) {
+        alert('Beds cannot be fewer than bedrooms.');
+        return false;
+    }
+
+    if (occupants && beds && occupants < beds) {
+        alert('Max occupants cannot be fewer than beds.');
+        return false;
+    }
+
+    return true;
+}
+
+function applyRoomRules(propertyType) {
+    const bedrooms = document.getElementById('bedrooms');
+    const beds = document.getElementById('beds');
+    const occupants = document.getElementById('max_occupants');
+
+    if (!bedrooms || !beds || !occupants) return;
+
+    if (propertyType === 'Room') {
+        // Force values
+        bedrooms.value = 1;
+        beds.value = 1;
+        occupants.value = 1;
+
+        // Lock fields
+        bedrooms.readOnly = true;
+        beds.readOnly = true;
+        occupants.readOnly = true;
+
+        bedrooms.classList.add('bg-gray-100');
+        beds.classList.add('bg-gray-100');
+        occupants.classList.add('bg-gray-100');
+    } else {
+        // Unlock for Apartment / House
+        bedrooms.readOnly = false;
+        beds.readOnly = false;
+        occupants.readOnly = false;
+
+        bedrooms.classList.remove('bg-gray-100');
+        beds.classList.remove('bg-gray-100');
+        occupants.classList.remove('bg-gray-100');
+    }
+}
+
 
 
 
