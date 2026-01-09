@@ -74,7 +74,7 @@
         </a>
 
         <!-- Manage UMPSA Resources -->
-        <a href="#"
+        <a href="{{ route('admin.resources.index') }}"
            class="bg-purple-500 hover:bg-purple-700 text-white
                   rounded-xl shadow p-8 h-80
                   flex flex-col items-center justify-center

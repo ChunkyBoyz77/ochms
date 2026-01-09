@@ -58,7 +58,7 @@ class User extends Authenticatable
         return $this->hasOne(Landlord::class);
     }
 
-    public function jhepaadmin()
+    public function jhepa_admin()
     {
         return $this->hasOne(JhepaAdmin::class);
     }

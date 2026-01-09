@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LandlordScreeningController;
 use App\Http\Controllers\RentalBookingController;
 use App\Http\Controllers\RatingReviewController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ResourceController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisteredUserController;
 
@@ -303,9 +303,29 @@ Route::middleware(['auth', 'role:ocs'])->group(function () {
         ->name('ocs.reviews.destroy');
 });
 
-Route::middleware(['auth', 'role:landlord'])
-    ->get('/landlord/dashboard', [DashboardController::class, 'landlordIndex'])
-    ->name('landlord.dashboard');
+
+
+// ADMIN
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/admin/resources', [ResourceController::class, 'index'])->name('admin.resources.index');
+    Route::get('/admin/resources/create', [ResourceController::class, 'create'])->name('admin.resources.create');
+    Route::post('/admin/resources', [ResourceController::class, 'store'])->name('admin.resources.store');
+    Route::get('/admin/resources/{resource}/edit', [ResourceController::class, 'edit'])->name('admin.resources.edit');
+    Route::put('/admin/resources/{resource}', [ResourceController::class, 'update'])->name('admin.resources.update');
+    Route::delete('/admin/resources/{resource}', [ResourceController::class, 'destroy'])->name('admin.resources.destroy');
+});
+
+Route::get('/', [ResourceController::class, 'landing'])->name('home');
+
+// OCS
+Route::middleware(['auth', 'is_ocs'])->group(function () {
+    Route::get('/ocs/resources', [ResourceController::class, 'listForStudents'])->name('ocs.resources.index');
+});
+
+// SHARED VIEW
+Route::get('/admin/resources/{resource}', [ResourceController::class, 'show'])->name('resources.show');
+
+Route::get('/resources/{resource}', [ResourceController::class, 'OcsShow'])->name('resources.OcsShow');
 
 
 
@@ -321,10 +341,10 @@ Route::middleware(['auth', 'role:landlord'])
 
 
 
-// Step 2: Register as specific role
-Route::get('/register/ocs', [RegisteredUserController::class, 'createOcs'])->name('register.ocs');
-Route::get('/register/landlord', [RegisteredUserController::class, 'createLandlord'])->name('register.landlord');
-Route::get('/register/admin', [RegisteredUserController::class, 'createAdmin'])->name('register.admin');
+
+
+
+
 
 // Step 3: Store registration form (still same controller@store)
 Route::post('/register/ocs', [RegisteredUserController::class, 'storeOcs'])->name('register.ocs.store');

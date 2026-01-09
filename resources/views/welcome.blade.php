@@ -378,36 +378,44 @@
         <!-- Services -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
 
-            @foreach ([
-                ['name' => 'Campus Pantry', 'icon' => 'fa-utensils', 'desc' => 'Food assistance for students in need'],
-                ['name' => 'PKU Hotline', 'icon' => 'fa-phone', 'desc' => 'Immediate health and emergency support'],
-                ['name' => 'Sejahtera Center', 'icon' => 'fa-heart', 'desc' => 'Mental health & counselling services'],
-                ['name' => 'OKU Center', 'icon' => 'fa-wheelchair', 'desc' => 'Support for students with disabilities'],
-            ] as $service)
+        @forelse($resources as $resource)
 
-            <div class="group relative rounded-2xl bg-white/5 backdrop-blur-md
-                        p-8 hover:bg-white/10 transition shadow-xl">
+        <a href="{{ route('resources.OcsShow', $resource) }}"
+        class="group relative rounded-2xl bg-white/5 backdrop-blur-md
+                p-8 hover:bg-white/10 transition shadow-xl">
 
-                <div class="w-16 h-16 rounded-xl bg-white/10 flex items-center justify-center mb-6
-                            group-hover:scale-110 transition">
-                    <i class="fa-solid {{ $service['icon'] }} text-2xl"></i>
-                </div>
+            <div class="w-16 h-16 rounded-xl bg-white/10 flex items-center justify-center mb-6
+                        group-hover:scale-110 transition overflow-hidden">
 
-                <h3 class="text-xl font-bold mb-3">
-                    {{ $service['name'] }}
-                </h3>
-
-                <p class="text-gray-300 text-sm mb-6">
-                    {{ $service['desc'] }}
-                </p>
-
-                <div class="flex items-center gap-2 text-sm font-semibold opacity-70 group-hover:opacity-100 transition">
-                    Learn more
-                    <i class="fa-solid fa-arrow-right"></i>
-                </div>
+                @if($resource->image_path)
+                    <img src="{{ asset('storage/'.$resource->image_path) }}"
+                        class="w-full h-full object-cover">
+                @else
+                    <i class="fa-solid fa-circle-info text-2xl"></i>
+                @endif
             </div>
 
-            @endforeach
+            <h3 class="text-xl font-bold mb-3">
+                {{ $resource->title }}
+            </h3>
+
+            <p class="text-gray-300 text-sm mb-6 line-clamp-3">
+                {{ Str::limit(strip_tags($resource->description), 90) }}
+            </p>
+
+            <div class="flex items-center gap-2 text-sm font-semibold opacity-70 group-hover:opacity-100 transition">
+                Learn more
+                <i class="fa-solid fa-arrow-right"></i>
+            </div>
+
+        </a>
+
+        @empty
+            <p class="col-span-4 text-center text-gray-400">
+                No resources available at the moment.
+            </p>
+        @endforelse
+
         </div>
 
         <!-- Support Banner -->
