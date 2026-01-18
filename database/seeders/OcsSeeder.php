@@ -17,7 +17,7 @@ class OcsSeeder extends Seeder
                 'user_id' => $user->id,
                 'matric_id' => 'CB' . str_pad($index + 1, 6, '0', STR_PAD_LEFT),
                 'faculty' => fake()->randomElement([
-                    'FKOM', 'FTKKP', 'FKEKK', 'FTKEE'
+                    'Faculty of Computing', 'Faculty of Mechanical and Automotive Engineering Technology', 'Faculty of Manufacturing and Mechatronic Engineering Technology', 'Faculty of Electrical and Electronics Engineering Technology'
                 ]),
                 'course' => fake()->randomElement([
                     'Software Engineering',

@@ -11,37 +11,67 @@ class ListingSeeder extends Seeder
     public function run(): void
     {
         $locations = [
-            [
-                'address' => 'Taman Universiti, Pekan, Pahang',
-                'lat' => 3.5449,
-                'lng' => 103.4281,
-                'distance' => 0.8,
-            ],
-            [
-                'address' => 'Taman Sri Mahkota, Pekan, Pahang',
-                'lat' => 3.5518,
-                'lng' => 103.4392,
-                'distance' => 2.3,
-            ],
-            [
-                'address' => 'Taman Bestari, Pekan, Pahang',
-                'lat' => 3.5326,
-                'lng' => 103.4171,
-                'distance' => 4.9,
-            ],
-            [
-                'address' => 'Bandar Pekan Lama, Pekan, Pahang',
-                'lat' => 3.4939,
-                'lng' => 103.3905,
-                'distance' => 8.6,
-            ],
-            [
-                'address' => 'Peramu Jaya, Pekan, Pahang',
-                'lat' => 3.4632,
-                'lng' => 103.4038,
-                'distance' => 12.4,
-            ],
-        ];
+        [
+            'address' => 'No 12, Jalan Mentiga Jaya 1, Taman Mentiga Jaya, 26600 Pekan, Pahang',
+            'lat' => 3.5463,
+            'lng' => 103.4296,
+            'distance' => 1.4,
+        ],
+        [
+            'address' => 'No 8, Jalan Mentiga Jaya 3, Taman Mentiga Jaya, 26600 Pekan, Pahang',
+            'lat' => 3.5459,
+            'lng' => 103.4308,
+            'distance' => 1.6,
+        ],
+        [
+            'address' => 'No 25, Jalan LKNP 2, Taman LKNP, 26600 Pekan, Pahang',
+            'lat' => 3.5435,
+            'lng' => 103.4269,
+            'distance' => 2.0,
+        ],
+        [
+            'address' => 'No 14, Jalan LKNP 5, Taman LKNP, 26600 Pekan, Pahang',
+            'lat' => 3.5442,
+            'lng' => 103.4257,
+            'distance' => 2.2,
+        ],
+        [
+            'address' => 'No 6, Jalan Beruas Makmur Jaya 1, Pekan, Pahang',
+            'lat' => 3.5398,
+            'lng' => 103.4324,
+            'distance' => 3.3,
+        ],
+        [
+            'address' => 'No 18, Jalan Beruas Makmur Jaya 3, Pekan, Pahang',
+            'lat' => 3.5389,
+            'lng' => 103.4315,
+            'distance' => 3.5,
+        ],
+        [
+            'address' => 'No 33, Kampung Beruas, 26600 Pekan, Pahang',
+            'lat' => 3.5372,
+            'lng' => 103.4339,
+            'distance' => 3.9,
+        ],
+        [
+            'address' => 'No 51, Kampung Beruas Tengah, Pekan, Pahang',
+            'lat' => 3.5366,
+            'lng' => 103.4351,
+            'distance' => 4.2,
+        ],
+        [
+            'address' => 'No 7, Kampung Tegak, 26600 Pekan, Pahang',
+            'lat' => 3.5491,
+            'lng' => 103.4218,
+            'distance' => 2.8,
+        ],
+        [
+            'address' => 'No 19, Kampung Tegak Hilir, Pekan, Pahang',
+            'lat' => 3.5503,
+            'lng' => 103.4232,
+            'distance' => 3.0,
+        ],
+    ];
 
         $amenitiesPool = [
             'WiFi',
@@ -50,8 +80,6 @@ class ListingSeeder extends Seeder
             'Washing Machine',
             'Security',
             'Furnished',
-            'Study Room',
-            'CCTV',
         ];
 
         foreach (Landlord::all() as $landlord) {
@@ -63,7 +91,7 @@ class ListingSeeder extends Seeder
                     'House'
                 ]);
 
-                // 🧠 Property-type-aware defaults
+                //Property-type-aware defaults
                 if ($propertyType === 'Room') {
                     $bedrooms = 1;
                     $bathrooms = 1;
@@ -86,7 +114,7 @@ class ListingSeeder extends Seeder
 
                 Listing::create([
                     'landlord_id' => $landlord->id,
-                    'ocs_id' => null, // ✅ keep null
+                    'ocs_id' => null,
                     'title' => fake()->randomElement([
                         'Fully Furnished Student '.$propertyType,
                         'Affordable '.$propertyType.' Near UMPSA',

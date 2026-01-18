@@ -18,15 +18,19 @@ class LandlordSeeder extends Seeder
             Landlord::create([
                 'user_id' => $user->id,
                 'reviewed_by_admin_id' => $admin->id,
-                'bank_account_num' => fake()->bankAccountNumber(),
+                'bank_account_num' => fake()->numerify('##########'),
                 'bank_name' => fake()->randomElement([
-                    'Maybank', 'CIMB', 'Bank Islam', 'Public Bank'
+                    'Maybank',
+                    'CIMB Bank',
+                    'Bank Islam',
+                    'Public Bank',
+                    'RHB Bank'
                 ]),
                 'has_criminal_record' => false,
                 'agreement_accepted' => true,
                 'screening_status' => 'approved',
-                'screening_submitted_at' => now()->subDays(10),
-                'screening_reviewed_at' => now()->subDays(7),
+                'screening_submitted_at' => now()->subDays(rand(10, 20)),
+                'screening_reviewed_at' => now()->subDays(rand(5, 9)),
             ]);
         }
     }
