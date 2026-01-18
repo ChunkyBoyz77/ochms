@@ -83,7 +83,7 @@
                class="flex items-center gap-3 p-3 border rounded-lg
                       hover:bg-purple-50 transition">
                 <i class="fa-solid fa-file-contract text-purple-600 text-lg"></i>
-                <span class="font-medium text-gray-700">Proof of Address</span>
+                <span class="font-medium text-gray-700">Verification Supporting Documents</span>
             </a>
         </div>
 

@@ -96,15 +96,14 @@
             text-lg sm:text-xl lg:text-2xl
             mb-3 lg:mb-4
             lg:text-center">
-        Property Ownership Proof
+        Verification Supporting Documents
     </h3>
 
     <p class="text-gray-600
             text-sm sm:text-base lg:text-lg
             leading-relaxed
             lg:text-center max-w-md">
-        Provide official documents that prove you own the property
-        or are legally authorized to rent it to students.
+        Provide supporting documents such as utility bills or proof of address.
     </p>
 </div>
 

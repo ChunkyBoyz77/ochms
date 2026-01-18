@@ -62,7 +62,7 @@
         <div class="flex items-center gap-3">
             <i id="step2Icon" class="fa-solid fa-clock text-yellow-500 text-lg"></i>
             <div>
-                <p class="font-medium text-gray-800">Property Documents</p>
+                <p class="font-medium text-gray-800">Supporting Documents</p>
                 <p id="step2Status" class="text-gray-500">Pending</p>
             </div>
         </div>
@@ -171,14 +171,14 @@
                 text-lg sm:text-xl lg:text-2xl
                 mb-3 lg:mb-4
                 lg:text-center">
-            Proof of Address
+            Verification Supporting Documents
         </h3>
 
         <p class="text-gray-600
                 text-sm sm:text-base lg:text-lg
                 leading-relaxed
                 lg:text-center max-w-md mb-6">
-            Provide official documents that prove your address.
+            Provide supporting documents such as utility bills or proof of address.
         </p>
 
         <div class="w-full flex flex-col items-center">

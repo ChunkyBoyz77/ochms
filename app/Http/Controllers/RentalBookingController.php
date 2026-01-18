@@ -844,6 +844,8 @@ public function approveBooking(Listing $listing)
 
     abort_if($listing->status !== 'requested', 400);
 
+    
+
     $listing->update([
         'status' => 'occupied',
     ]);
@@ -870,13 +872,15 @@ public function rejectBooking(Request $request, Listing $listing)
 
     abort_if($listing->status !== 'requested', 400);
 
+    $ocsEmail = $listing->ocs->user->email;
+
     $listing->update([
         'status' => 'published',
         'ocs_id' => null,
     ]);
 
-    Mail::to($ocs->user->email)
-        ->send(new BookingRejectedMail($listing, $reason));
+    Mail::to($ocsEmail)
+        ->send(new BookingRejectedMail($listing));
 
     return redirect()
         ->route('landlord.booking.requests')
