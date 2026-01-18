@@ -4,19 +4,103 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Ocs;
+use App\Models\Listing;
+use App\Models\Landlord;
 use App\Models\Resource;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ResourceController extends Controller
 {
     /* ================= ADMIN ================= */
+    public function adminDashboard()
+    {
+        return view('auth.admin-auth.admin-dashboard', [
+            // Stats Overview
+            'totalLandlords' => Landlord::count(),
+            'totalStudents' => Ocs::count(),
+            'totalProperties' => Listing::count(),
+            'pendingVerifications' => Landlord::where('screening_status', 'pending')->count(),
+            
+            // Properties Breakdown
+            'propertiesByType' => Listing::select('property_type', DB::raw('count(*) as count'))
+                ->groupBy('property_type')
+                ->get(),
+            
+            // System Stats
+            'averageRating' => number_format(
+                Review::avg('rating') ?? 0, 
+                1
+            ),
+            'totalReviews' => Review::count(),
+            'occupiedListings' => Listing::where('status', 'occupied')->count(),
+            
+            // Recent Activity
+            'activities' => collect([
+                // Recent verifications
+                ...Landlord::where('screening_status', 'approved')
+                    ->latest('updated_at')
+                    ->take(3)
+                    ->get()
+                    ->map(fn($l) => [
+                        'type' => 'verification',
+                        'title' => 'Landlord Verified',
+                        'subtitle' => $l->user->name ?? 'Unknown',
+                        'created_at' => $l->updated_at,
+                    ]),
+                
+                // Recent resources added
+                ...Resource::latest()
+                    ->take(2)
+                    ->get()
+                    ->map(fn($r) => [
+                        'type' => 'resource',
+                        'title' => 'Resource Added',
+                        'subtitle' => $r->title,
+                        'created_at' => $r->created_at,
+                    ]),
+            ])->sortByDesc('created_at')->take(5)->values(),
+            
+            
+        ]);
+    }
+
+    public function adminMapView(Request $request)
+    {
+        $query = Listing::with(['landlord.user', 'images'])
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude');
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->whereIn('status', $request->status);
+        }
+
+        // Filter by property type
+        if ($request->filled('type')) {
+            $query->whereIn('property_type', $request->type);
+        }
+
+        $listings = $query->get();
+
+        return view('auth.admin-auth.admin-check-properties', compact('listings'));
+    }
 
     public function index()
     {
         $resources = Resource::latest()->get();
         return view('manage_umpsa_resources.admin-resource-list', compact('resources'));
+    }
+
+    public function ocsIndex()
+    {
+        $resources = Resource::latest()->get();
+
+        return view('manage_umpsa_resources.ocs-resource-list', compact('resources'));
     }
 
     public function create()
@@ -30,9 +114,9 @@ class ResourceController extends Controller
         
         $request->validate([
             'title' => 'required|string|max:255',
-            'category' => 'nullable|string|max:100',
+            'category' => 'required|string|max:100',
             'external_link' => 'nullable|url',
-            'description' => 'required',
+            'description' => ['required', 'string', 'not_regex:/^<p><br><\/p>$/'],
             'image' => 'nullable|image|max:2048',
         ]);
 
@@ -99,7 +183,9 @@ class ResourceController extends Controller
 
         $resource->delete();
 
-        return back()->with('error', 'Resource deleted.');
+         return redirect()
+        ->route('admin.resources.index')
+        ->with('error', 'Resource deleted successfully.');
     }
 
     /* ================= OCS + VIEW ================= */
@@ -109,6 +195,7 @@ class ResourceController extends Controller
         $resources = Resource::latest()->take(4)->get(); // show 4 only
         return view('welcome', compact('resources'));
     }
+
 
     public function show(Resource $resource)
     {

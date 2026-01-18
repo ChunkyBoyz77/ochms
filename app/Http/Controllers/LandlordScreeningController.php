@@ -123,7 +123,7 @@ class LandlordScreeningController extends Controller
         $completed = 0;
 
         if (session('verification_files.ic_pic')) $completed++;
-        if (session('verification_files.proof_of_address')) $completed++;
+        if (session('verification_files.supporting_document')) $completed++;
         if (session('verification_screening.completed')) $completed++;
 
         $progress = (int) round(($completed / 3) * 100);
@@ -141,15 +141,15 @@ class LandlordScreeningController extends Controller
     {
         $request->validate([
             'ic_pic' => 'nullable|file|mimes:pdf,jpg,jpeg|max:10240',
-            'proof_of_address' => 'nullable|file|mimes:pdf,jpg,jpeg|max:10240',
+            'supporting_document' => 'nullable|file|mimes:pdf,jpg,jpeg|max:10240',
         ]);
 
         $verificationFiles = session('verification_files', [
             'ic_pic' => null,
-            'proof_of_address' => null,
+            'supporting_document' => null,
         ]);
 
-        foreach (['ic_pic', 'proof_of_address'] as $field) {
+        foreach (['ic_pic', 'supporting_document'] as $field) {
             if ($request->hasFile($field)) {
 
                 // 🔥 DELETE OLD TEMP FILE IF EXISTS
@@ -181,7 +181,7 @@ class LandlordScreeningController extends Controller
      * ========================= */
     public function previewSessionFile(string $type)
     {
-        if (!in_array($type, ['ic_pic', 'proof_of_address'])) {
+        if (!in_array($type, ['ic_pic', 'supporting_document'])) {
             abort(404);
         }
 
@@ -216,7 +216,7 @@ class LandlordScreeningController extends Controller
     {
         if (
             !session('verification_files.ic_pic') ||
-            !session('verification_files.proof_of_address')
+            !session('verification_files.supporting_document')
         ) {
             return redirect()->route('landlord.verification');
         }
@@ -289,7 +289,7 @@ class LandlordScreeningController extends Controller
             ], 400);
         }
 
-        foreach (['ic_pic', 'proof_of_address'] as $field) {
+        foreach (['ic_pic', 'supporting_document'] as $field) {
 
             if (
                 empty($files[$field]['temp_path']) ||
@@ -342,7 +342,7 @@ class LandlordScreeningController extends Controller
     {
         $steps = [
             !empty($landlord->ic_pic),
-            !empty($landlord->proof_of_address),
+            !empty($landlord->supporting_document),
             !empty($landlord->bank_account_num),
             $landlord->has_criminal_record !== null,
             $landlord->agreement_accepted,
@@ -388,7 +388,7 @@ class LandlordScreeningController extends Controller
             'bank_name' => 'required|string|max:255',
             'bank_account_num' => 'required|string|max:255',
             'ic_pic' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
-            'proof_of_address' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
             'has_criminal_record' => 'required|boolean',
             'criminal_record_details' => 'nullable|string|max:1000',
             'agreement_accepted' => 'required|accepted',
@@ -414,13 +414,13 @@ class LandlordScreeningController extends Controller
             $updateData['ic_pic'] = $request->file('ic_pic')->store('verification/ic', 'public');
         }
 
-        // Handle Proof of Address file upload
-        if ($request->hasFile('proof_of_address')) {
+        // Handle Supporting Document file upload
+        if ($request->hasFile('supporting_document')) {
             // Delete old file if exists
-            if ($landlord->proof_of_address) {
-                Storage::disk('public')->delete($landlord->proof_of_address);
+            if ($landlord->supporting_document) {
+                Storage::disk('public')->delete($landlord->supporting_document);
             }
-            $updateData['proof_of_address'] = $request->file('proof_of_address')->store('verification/proof_of_address', 'public');
+            $updateData['supporting_document'] = $request->file('supporting_document')->store('verification/supporting_document', 'public');
         }
 
         // Update landlord record
@@ -446,7 +446,7 @@ class LandlordScreeningController extends Controller
 
         $landlord->update([
             'ic_pic' => null,
-            'proof_of_address' => null,
+            'supporting_document' => null,
             'bank_account_num' => null,
             'bank_name' => null,
             'has_criminal_record' => null,

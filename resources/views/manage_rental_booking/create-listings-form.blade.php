@@ -59,6 +59,18 @@
     </div>
 </div>
 
+@if ($errors->any())
+    <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-6">
+        <p class="font-semibold mb-2">
+            Please fix the following issues before publishing:
+        </p>
+        <ul class="text-sm list-disc pl-5 space-y-1">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
 <form method="POST"
       action="{{ route('landlord.listings.store') }}"
@@ -1255,12 +1267,14 @@ function applyRoomRules(propertyType) {
         occupants.classList.remove('bg-gray-100');
     }
 }
-
-
-
-
-
 </script>
+
+@if ($errors->any())
+<script>
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+</script>
+@endif
+
 
 
 

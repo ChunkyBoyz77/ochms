@@ -137,9 +137,10 @@
 
 </body>
 
-<!-- ========================= -->
-<!-- MODAL SCRIPT -->
-<!-- ========================= -->
+<script
+src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_key') }}"
+async>
+</script>
 <script>
 function openApproveModal(actionUrl) {
     document.getElementById('approveForm').action = actionUrl;

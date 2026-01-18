@@ -17,7 +17,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        return view('welcome');
     }
 
     /**
@@ -49,9 +49,10 @@ class AuthenticatedSessionController extends Controller
                     $adminProfile->user->password
                 )
             ) {
-                return back()->withErrors([
-                    'staff_id' => trans('auth.failed'),
-                ]);
+                return back()
+                    ->with('login_error', 'Incorrect Staff ID or password.')
+                    ->with('show_auth_modal', true)
+                    ->withInput();
             }
 
             Auth::login($adminProfile->user, $request->boolean('remember'));
@@ -73,9 +74,10 @@ class AuthenticatedSessionController extends Controller
                 $request->only('email', 'password'),
                 $request->boolean('remember')
             )) {
-                return back()->withErrors([
-                    'email' => trans('auth.failed'),
-                ]);
+                return back()
+                    ->with('login_error', 'Incorrect email or password.')
+                    ->with('show_auth_modal', true)
+                    ->withInput();
             }
 
             $request->session()->regenerate();
@@ -111,12 +113,22 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = Auth::user(); 
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
+
+        if ($user && $user->role === 'admin') {
+            return redirect()->route('admin.login');
+        }
+
+        if ($user && $user->role === 'landlord') {
+            return redirect()->route('landlord.auth');
+        }
 
         return redirect('/');
     }
+
 }

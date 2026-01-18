@@ -2,7 +2,7 @@
 <html lang="en"> 
 <head> 
     <meta charset="UTF-8"> 
-    <title>OCS Landing Page</title> 
+    <title>OCHMS Landing Page</title> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"> 
     <link href="https://fonts.googleapis.com/css2?family=Barrio&display=swap" rel="stylesheet"> 
     <link href="https://fonts.googleapis.com/css2?family=Barriecito&display=swap" rel="stylesheet"> 
@@ -11,159 +11,6 @@
 </head>
 
 <body class="bg-gray-100 overflow-x-hidden">
-
-<!-- AUTH MODAL OVERLAY -->
-<div id="authModal"
-     class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-[999] flex items-center justify-center">
-
-    <!-- MODAL BOX -->
-    <div id="authModalBox"
-         class="bg-white rounded-2xl w-full max-w-xl mx-4 shadow-xl relative max-h-[90vh] overflow-y-auto">
-
-        <!-- Close Button -->
-        <button onclick="closeAuthModal()"
-                class="absolute top-4 right-4 text-gray-500 hover:text-gray-900">
-            <i class="fa-solid fa-xmark text-xl"></i>
-        </button>
-
-        <div class="p-8">
-
-            <h2 class="text-xl font-semibold mb-6">Log in or sign up</h2>
-
-            <!-- LOGIN FORM -->
-            <div id="loginForm">
-                @if ($errors->any())
-                    <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200
-                                text-sm text-red-700">
-                        Incorrect email or password.
-                    </div>
-                @endif
-
-                <form id="loginFormElement" method="POST" action="{{ route('login') }}">
-                    @csrf
-
-                    <div class="mb-4">
-                        <label class="font-semibold">Email</label>
-                        <input type="email" name="email" required
-                               class="w-full p-3 border rounded mt-1">
-                    </div>
-
-                    <div class="mb-4 relative">
-                        <label class="font-semibold">Password</label>
-                        <input type="password" id="loginPassword" name="password" required
-                               class="w-full p-3 border rounded mt-1 pr-10">
-
-                        <button type="button"
-                                onclick="togglePassword('loginPassword', this)"
-                                class="absolute right-3 top-10 text-gray-500">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
-
-                    <div class="flex items-center justify-between mb-4">
-                        <label class="inline-flex items-center gap-2 text-sm text-gray-600">
-                            <input type="checkbox" name="remember"
-                                   class="rounded border-gray-300 text-gray-900 focus:ring-gray-900">
-                            Remember me
-                        </label>
-
-                        <a href="{{ route('password.request') }}"
-                           class="text-sm text-gray-900 hover:underline">
-                            Forgot password?
-                        </a>
-                    </div>
-
-                    <button type="submit"
-                            class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg">
-                        Continue
-                    </button>
-                </form>
-
-                <p class="text-sm text-center mt-4">
-                    New here?
-                    <button onclick="showRegister()"
-                            class="text-gray-900 font-semibold">
-                        Create an account
-                    </button>
-                </p>
-            </div>
-
-            <!-- REGISTER FORM -->
-            <div id="registerForm" class="hidden">
-
-                <form method="POST" action="{{ route('register.ocs.store') }}">
-                    @csrf
-                    <input type="hidden" name="role" value="ocs">
-
-                    <div class="mb-4">
-                        <label class="font-semibold">Full Name</label>
-                        <input type="text" name="name" required
-                               class="w-full p-3 border rounded mt-1">
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="font-semibold">Student ID</label>
-                        <input type="text" name="matric_id" required
-                               class="w-full p-3 border rounded mt-1">
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="font-semibold">Email</label>
-                        <input type="email" name="email" required
-                               class="w-full p-3 border rounded mt-1">
-                    </div>
-
-                    <div class="mb-2 relative">
-                        <label class="font-semibold">Password</label>
-                        <input type="password" id="password" name="password" required
-                               class="w-full p-3 border rounded mt-1 pr-10"
-                               oninput="checkPasswordStrength(); checkPasswordMatch();">
-
-                        <button type="button"
-                                onclick="togglePassword('password', this)"
-                                class="absolute right-3 top-10 text-gray-500">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
-
-                    <p id="passwordStatus"
-                       class="text-sm mt-1 text-gray-500 hidden"></p>
-
-                    <div class="mb-2 relative mt-4">
-                        <label class="font-semibold">Confirm Password</label>
-                        <input type="password" id="confirmPassword"
-                               name="password_confirmation" required
-                               class="w-full p-3 border rounded mt-1 pr-10"
-                               oninput="checkPasswordMatch()">
-
-                        <button type="button"
-                                onclick="togglePassword('confirmPassword', this)"
-                                class="absolute right-3 top-10 text-gray-500">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
-
-                    <p id="matchMessage" class="text-sm mt-1"></p>
-
-                    <button type="submit"
-                            class="w-full mt-6 bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg">
-                        Sign up
-                    </button>
-                </form>
-
-                <p class="text-sm text-center mt-4">
-                    Already have an account?
-                    <button onclick="showLogin()"
-                            class="text-gray-900 font-semibold">
-                        Log in
-                    </button>
-                </p>
-
-            </div>
-
-        </div>
-    </div>
-</div>
 
 @include('layouts.header.ocs-welcome-header')
 <!-- HERO SECTION -->
@@ -378,7 +225,8 @@
         <!-- Services -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
 
-        @forelse($resources as $resource)
+        @forelse($resources ?? [] as $resource)
+
 
         <a href="{{ route('resources.OcsShow', $resource) }}"
         class="group relative rounded-2xl bg-white/5 backdrop-blur-md
@@ -418,24 +266,28 @@
 
         </div>
 
-        <!-- Support Banner -->
-        <div class="mt-24 bg-white/10 backdrop-blur-md rounded-2xl p-10 text-center shadow-2xl">
-            <p class="text-xl font-semibold mb-3">
-                Need immediate help?
-            </p>
-            <p class="text-gray-300 mb-6">
-                UMPSA support services are available around the clock to assist you.
+        <!-- UMPSA Resources Banner -->
+        <div class="mt-16 bg-white/10 backdrop-blur-md rounded-2xl p-10 text-center shadow-2xl">
+            <p class="text-2xl font-semibold mb-3">
+                Explore UMPSA Resources
             </p>
 
-            <a href="#"
-               class="inline-flex items-center gap-3
-                      bg-white text-gray-900
-                      px-8 py-4 rounded-xl
-                      font-semibold shadow-lg hover:bg-gray-100 transition">
-                Contact Support
-                <i class="fa-solid fa-headset"></i>
+            <p class="text-gray-300 mb-6 max-w-2xl mx-auto">
+                Access official UMPSA services, academic platforms, student support systems,
+                and important campus resources — all in one place.
+            </p>
+
+            <a href="{{ route('resources.ocs.index') }}"
+            class="inline-flex items-center gap-3
+                    bg-white text-gray-900
+                    px-8 py-4 rounded-xl
+                    font-semibold shadow-lg
+                    hover:bg-gray-100 transition">
+                View All Resources
+                <i class="fa-solid fa-arrow-right"></i>
             </a>
         </div>
+
 
     </div>
 </div>

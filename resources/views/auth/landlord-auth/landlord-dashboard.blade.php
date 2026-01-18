@@ -162,7 +162,7 @@
 
 
             <!-- Profile Settings -->
-            <a href="#"
+            <a href="{{ route('profile.update') }}" 
                class="group bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-2xl shadow-lg hover:shadow-xl p-8 transition-all duration-300 hover:scale-105 relative overflow-hidden">
                 
                 <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-8 -translate-y-8"></div>

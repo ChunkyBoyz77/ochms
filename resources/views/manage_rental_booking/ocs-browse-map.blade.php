@@ -109,7 +109,8 @@ aside::-webkit-scrollbar-thumb:hover {
                     class="bg-white rounded-xl border border-gray-200 overflow-hidden
                            cursor-pointer transition-all duration-200
                            hover:border-gray-900 hover:shadow-lg group"
-                    data-listing-id="{{ $listing->id }}">
+                    data-listing-id="{{ $listing->id }}"
+                    data-url="{{ route('ocs.listings.show', $listing) }}">
 
                     {{-- Image --}}
                     <div class="relative h-52 overflow-hidden bg-gray-100">
@@ -125,7 +126,7 @@ aside::-webkit-scrollbar-thumb:hover {
                             Verified
                         </div>
 
-                         {{-- ⭐ RATING BADGE --}}
+                         {{-- RATING BADGE --}}
                         @if($listing->reviews_count > 0)
                             <div
                                 class="absolute top-3 right-3
@@ -311,5 +312,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 </script>
+<script>
+document.querySelectorAll('[data-url]').forEach(card => {
+    card.addEventListener('click', (e) => {
+        // Prevent accidental text selection
+        e.preventDefault();
+        window.location.href = card.dataset.url;
+    });
+});
+</script>
+
 
 @endsection

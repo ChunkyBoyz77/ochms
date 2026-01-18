@@ -15,6 +15,16 @@ Route::get('/', function () {
 })->name('home');
 
 
+Route::get('/login', function () {
+    return redirect()->route('home');
+})->name('login');
+
+
+Route::get('/logout', function () {
+    return redirect('/')->with('message', 'Session expired. Please log in again.');
+});
+
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -98,9 +108,8 @@ Route::middleware(['auth', 'role:admin'])
     ->group(function () {
 
         // Admin dashboard
-        Route::get('/dashboard', function () {
-            return view('auth.admin-auth.admin-dashboard');
-        })->name('admin.dashboard');
+        Route::get('/dashboard',[ResourceController::class, 'adminDashboard'])
+        ->name('admin.dashboard');
 
         // Verification list (PENDING ONLY)
         Route::get('/verifications',
@@ -125,6 +134,8 @@ Route::middleware(['auth', 'role:admin'])
             [LandlordScreeningController::class, 'adminRequestResubmission']
         )->name('admin.verifications.resubmit');
 
+        Route::get('/listings/map', [ResourceController::class, 'adminMapView'])->name('admin.properties.map');
+        
          // Listing verification
         Route::get('/listings/{listing}', 
             [RentalBookingController::class, 'adminListingShow']
@@ -137,11 +148,22 @@ Route::middleware(['auth', 'role:admin'])
         Route::post('/listings/{listing}/reject', 
             [RentalBookingController::class, 'adminListingReject']
         )->name('admin.listings.reject');
+
+        
         });
+
+
 
 require __DIR__.'/auth.php';
 
 // Custom registration flow
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+});
+
+
 
 //Become Landlord Promo page
 Route::get('/become-landlord', function () {
@@ -315,12 +337,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::delete('/admin/resources/{resource}', [ResourceController::class, 'destroy'])->name('admin.resources.destroy');
 });
 
-Route::get('/', [ResourceController::class, 'landing'])->name('home');
+Route::get('/ocs/resources', [ResourceController::class, 'ocsIndex'])
+    ->name('resources.ocs.index');
 
-// OCS
-Route::middleware(['auth', 'is_ocs'])->group(function () {
-    Route::get('/ocs/resources', [ResourceController::class, 'listForStudents'])->name('ocs.resources.index');
-});
+Route::get('/ocs/resources/{resource}', [ResourceController::class, 'ocsShow'])
+    ->name('resources.ocs.show');
+
+
+Route::get('/', [ResourceController::class, 'landing'])->name('home');
 
 // SHARED VIEW
 Route::get('/admin/resources/{resource}', [ResourceController::class, 'show'])->name('resources.show');

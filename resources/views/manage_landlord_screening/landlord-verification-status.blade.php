@@ -247,12 +247,12 @@
                 <label class="text-sm font-medium text-gray-600">Documents</label>
                 <div class="mt-2 space-y-2">
                     <a href="{{ Storage::url($landlord->ic_pic) }}" target="_blank" 
-                       class="flex items-center gap-2 text-blue-600 hover:underline text-sm">
+                       class="flex items-center gap-2 text-red-600 hover:underline text-sm">
                         <i class="fa-solid fa-file"></i> IC/Passport Document
                     </a>
-                    <a href="{{ asset('storage/' . $landlord->proof_of_address) }}" target="_blank" 
-                       class="flex items-center gap-2 text-blue-600 hover:underline text-sm">
-                        <i class="fa-solid fa-file"></i> Proof of Address
+                    <a href="{{ asset('storage/' . $landlord->supporting_document) }}" target="_blank" 
+                       class="flex items-center gap-2 text-red-600 hover:underline text-sm">
+                        <i class="fa-solid fa-file"></i> Supporting Document
                     </a>
                 </div>
             </div>
@@ -292,7 +292,7 @@
                            name="bank_name" 
                            value="{{ $landlord->bank_name }}"
                            required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                 </div>
 
                 <!-- Bank Account Number -->
@@ -304,7 +304,7 @@
                            name="bank_account_num" 
                            value="{{ $landlord->bank_account_num }}"
                            required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                 </div>
 
                 <!-- IC/Passport Document -->
@@ -314,30 +314,30 @@
                     </label>
                     @if($landlord->ic_pic)
                         <div class="mb-2 text-sm text-gray-600">
-                            Current: <a href="{{ Storage::url($landlord->ic_pic) }}" target="_blank" class="text-blue-600 hover:underline">View Document</a>
+                            Current: <a href="{{ Storage::url($landlord->ic_pic) }}" target="_blank" class="text-red-600 hover:underline">View Document</a>
                         </div>
                     @endif
                     <input type="file" 
                            name="ic_pic" 
                            accept="image/*,.pdf"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                     <p class="text-xs text-gray-500 mt-1">Leave empty to keep current document</p>
                 </div>
 
-                <!-- Proof of Address -->
+                <!-- Supporting Document -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Proof of Address
+                        Supporting Document
                     </label>
-                    @if($landlord->proof_of_address)
+                    @if($landlord->supporting_document)
                         <div class="mb-2 text-sm text-gray-600">
-                            Current: <a href="{{ Storage::url($landlord->proof_of_address) }}" target="_blank" class="text-blue-600 hover:underline">View Document</a>
+                            Current: <a href="{{ Storage::url($landlord->supporting_document) }}" target="_blank" class="text-red-600 hover:underline">View Document</a>
                         </div>
                     @endif
                     <input type="file" 
-                           name="proof_of_address" 
+                           name="supporting_document" 
                            accept="image/*,.pdf"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                     <p class="text-xs text-gray-500 mt-1">Leave empty to keep current document</p>
                 </div>
 
@@ -353,7 +353,7 @@
                                    value="0" 
                                    {{ !$landlord->has_criminal_record ? 'checked' : '' }}
                                    onchange="toggleCriminalDetails()"
-                                   class="text-blue-600">
+                                   class="text-red-600">
                             <span class="text-sm">No</span>
                         </label>
                         <label class="flex items-center gap-2">
@@ -362,7 +362,7 @@
                                    value="1" 
                                    {{ $landlord->has_criminal_record ? 'checked' : '' }}
                                    onchange="toggleCriminalDetails()"
-                                   class="text-blue-600">
+                                   class="text-red-600">
                             <span class="text-sm">Yes</span>
                         </label>
                     </div>
@@ -375,17 +375,17 @@
                     </label>
                     <textarea name="criminal_record_details" 
                               rows="3"
-                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">{{ $landlord->criminal_record_details }}</textarea>
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">{{ $landlord->criminal_record_details }}</textarea>
                 </div>
 
                 <!-- Agreement -->
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
                     <label class="flex items-start gap-2 cursor-pointer">
                         <input type="checkbox" 
                                name="agreement_accepted" 
                                value="1"
                                required
-                               class="mt-1 text-blue-600">
+                               class="mt-1 text-red-600">
                         <span class="text-sm text-gray-700">
                             I confirm that all information provided is accurate and I agree to the terms and conditions.
                         </span>
@@ -400,7 +400,7 @@
                     Cancel
                 </button>
                 <button type="submit" 
-                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
                     Update Application
                 </button>
             </div>

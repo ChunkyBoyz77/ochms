@@ -68,6 +68,26 @@
 @csrf
 @method('PUT')
 
+@if ($errors->any())
+    <div class="mb-6 rounded-xl border border-red-300 bg-red-50 p-4">
+        <div class="flex items-start gap-3">
+            <i class="fa-solid fa-circle-exclamation text-red-500 mt-1"></i>
+
+            <div>
+                <h3 class="font-semibold text-red-700 mb-1">
+                    Please fix the following errors:
+                </h3>
+
+                <ul class="list-disc list-inside text-sm text-red-600 space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    </div>
+@endif
+
 <!-- ================================================= -->
 <!-- SECTION TEMPLATE -->
 <!-- ================================================= -->
@@ -115,6 +135,9 @@ HTML;
                             focus:border-red-500
                             focus:ring-2 focus:ring-red-500
                             focus:ring-offset-0">
+            @error('title')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+            @enderror
 
             <!-- PROPERTY TYPE (Custom Dropdown) -->
             <div 

@@ -183,7 +183,7 @@
 
         <div class="w-full flex flex-col items-center">
             <input type="file"
-                name="proof_of_address"
+                name="supporting_document"
                 id="proofInput"
                 accept=".pdf,.jpg,.jpeg"
                 class="hidden">
@@ -260,7 +260,7 @@
 <script>
 window.sessionFiles = {
     ic_pic: @json(session('verification_files.ic_pic')),
-    proof_of_address: @json(session('verification_files.proof_of_address')),
+    supporting_document: @json(session('verification_files.supporting_document')),
     screening_done: {{ session('verification_screening.completed') ? 'true' : 'false' }}
 };
 </script>
@@ -275,13 +275,13 @@ console.log('🔍 Verification JS loaded');
 // Boolean-only state for progress
 let uploadedFiles = {
     ic_pic: {{ session()->has('verification_files.ic_pic') ? 'true' : 'false' }},
-    proof_of_address: {{ session()->has('verification_files.proof_of_address') ? 'true' : 'false' }}
+    supporting_document: {{ session()->has('verification_files.supporting_document') ? 'true' : 'false' }}
 };
 
 // File data ONLY for preview
 let previewFiles = {
     ic_pic: null,
-    proof_of_address: null
+    supporting_document: null
 };
 
 /* =========================
@@ -298,9 +298,9 @@ document.addEventListener('DOMContentLoaded', () => {
         updateFileUI('ic_pic', window.sessionFiles.ic_pic.name, true);
     }
 
-    if (window.sessionFiles.proof_of_address) {
-        uploadedFiles.proof_of_address = true;
-        updateFileUI('proof_of_address', window.sessionFiles.proof_of_address.name, true);
+    if (window.sessionFiles.supporting_document) {
+        uploadedFiles.supporting_document = true;
+        updateFileUI('supporting_document', window.sessionFiles.supporting_document.name, true);
     }
 
     updateProgress();
@@ -321,7 +321,7 @@ function bindUploadHandlers() {
         .addEventListener('change', e => handleFileUpload(e, 'ic_pic'));
 
     document.getElementById('proofInput')
-        .addEventListener('change', e => handleFileUpload(e, 'proof_of_address'));
+        .addEventListener('change', e => handleFileUpload(e, 'supporting_document'));
 }
 
 function bindDeleteHandlers() {
@@ -329,7 +329,7 @@ function bindDeleteHandlers() {
         .addEventListener('click', () => deleteFile('ic_pic'));
 
     document.getElementById('proofDeleteBtn')
-        .addEventListener('click', () => deleteFile('proof_of_address'));
+        .addEventListener('click', () => deleteFile('supporting_document'));
 }
 
 function bindPreviewHandlers() {
@@ -337,7 +337,7 @@ function bindPreviewHandlers() {
         .addEventListener('click', () => previewFile('ic_pic'));
 
     document.getElementById('proofFileName')
-        .addEventListener('click', () => previewFile('proof_of_address'));
+        .addEventListener('click', () => previewFile('supporting_document'));
 }
 
 /* =========================
@@ -452,7 +452,7 @@ function updateProgress() {
     let completed = 0;
 
     if (uploadedFiles.ic_pic) completed++;
-    if (uploadedFiles.proof_of_address) completed++;
+    if (uploadedFiles.supporting_document) completed++;
     if (window.sessionFiles.screening_done) completed++;
 
     const progress = Math.round((completed / 3) * 100);
@@ -461,7 +461,7 @@ function updateProgress() {
     document.getElementById('progressBar').style.width = progress + '%';
 
     updateStepUI('step1', uploadedFiles.ic_pic);
-    updateStepUI('step2', uploadedFiles.proof_of_address);
+    updateStepUI('step2', uploadedFiles.supporting_document);
 
     // Unlock screening
     const screeningBtn = document.getElementById('screeningBtn');

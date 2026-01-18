@@ -113,30 +113,72 @@
         @if ($listing->images->count() === 1)
             {{-- SINGLE IMAGE (FULL WIDTH) --}}
             <div class="col-span-12">
-                <img
-                    src="{{ asset('storage/'.$listing->images->first()->image_path) }}"
-                    class="w-full h-[600px] object-cover bg-gray-100
-                        rounded-2xl border">
+                @php
+                    $main = $listing->images->first();
+                    $ext = pathinfo($main->image_path, PATHINFO_EXTENSION);
+                @endphp
+
+                @if(in_array(strtolower($ext), ['mp4','mov','webm','ogg']))
+                    <video
+                        class="w-full h-[600px] object-cover rounded-2xl border"
+                        controls
+                        preload="metadata">
+                        <source src="{{ asset('storage/'.$main->image_path) }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                @else
+                    <img
+                        src="{{ asset('storage/'.$main->image_path) }}"
+                        class="w-full h-[600px] object-cover rounded-2xl border">
+                @endif
+
             </div>
         @else
 
-        {{-- MAIN IMAGE --}}
+        {{-- MAIN MEDIA --}}
         <div class="col-span-8">
+            @php
+                $main = $listing->images->first();
+                $ext = strtolower(pathinfo($main->image_path, PATHINFO_EXTENSION));
+            @endphp
 
-            <img
-                src="{{ $listing->images->first()
-                    ? asset('storage/'.$listing->images->first()->image_path)
-                    : asset('images/ocs-taman-placeholder.jpg') }}"
-                class="w-full h-[600px] object-cover rounded-2xl border">
-
+            @if(in_array($ext, ['mp4','mov','webm','ogg']))
+                <video
+                    class="w-full h-[600px] object-cover rounded-2xl border"
+                    controls
+                    preload="metadata"
+                    playsinline>
+                    <source src="{{ asset('storage/'.$main->image_path) }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            @else
+                <img
+                    src="{{ asset('storage/'.$main->image_path) }}"
+                    class="w-full h-[600px] object-cover rounded-2xl border">
+            @endif
         </div>
 
         {{-- THUMBNAILS --}}
         <div class="col-span-4 grid grid-cols-2 gap-4">
             @foreach($listing->images->slice(1,4) as $img)
-                <img
-                    src="{{ asset('storage/'.$img->image_path) }}"
-                    class="w-full h-[290px] object-cover rounded-xl border">
+                @php
+                    $ext = pathinfo($img->image_path, PATHINFO_EXTENSION);
+                @endphp
+
+                @if(in_array($ext, ['mp4','mov','webm','ogg']))
+                    <video
+                        class="w-full h-[290px] object-cover rounded-xl border"
+                        muted
+                        playsinline>
+                        <source src="{{ asset('storage/'.$img->image_path) }}" type="video/mp4">
+                    </video>
+                @else
+                    <img
+                        src="{{ asset('storage/'.$img->image_path) }}"
+                        class="w-full h-[290px] object-cover rounded-xl border">
+                @endif
+
+
             @endforeach
         </div>
 
@@ -313,14 +355,18 @@
                     </button>
                 @else
 
-                <button
-                    class="w-full bg-red-500 hover:bg-red-600
-                           text-white font-semibold py-3
-                           rounded-xl transition mb-3">
+                <a href="{{ route('landlord.listings.edit', $listing) }}"
+                class="w-full bg-red-500 hover:bg-red-600
+                        text-white font-semibold py-3
+                        rounded-xl transition mb-3
+                        text-center block">
                     Edit Listing
-                </button>
+                </a>
+
 
                 <button
+                    type="button"
+                    onclick="openDeleteListingModal({{ $listing->id }})"
                     class="w-full border border-gray-300
                            text-gray-700 py-3
                            rounded-xl hover:bg-gray-50 transition">
@@ -374,41 +420,32 @@
         </div>
 @php
 $amenityGroups = [
+    'Utilities & Comfort' => [
+        'icon' => 'fa-house',
+        'items' => [
+            'WiFi' => 'fa-wifi',
+            'Air Conditioning' => 'fa-snowflake',
+            'Furnished' => 'fa-couch',
+        ]
+    ],
+
+    'Facilities' => [
+        'icon' => 'fa-building',
+        'items' => [
+            'Parking' => 'fa-car',
+            'Washing Machine' => 'fa-soap',
+        ]
+    ],
+
     'Safety' => [
         'icon' => 'fa-shield-halved',
         'items' => [
-            'CCTV' => 'fa-video',
-            '24 Hours Security' => 'fa-user-shield',
-            'Fire System' => 'fa-fire-extinguisher',
-            'Controlled Access' => 'fa-key',
-            'Security Guard' => 'fa-user-lock',
-        ]
-    ],
-    'Property Services' => [
-        'icon' => 'fa-concierge-bell',
-        'items' => [
-            'Reception' => 'fa-bell-concierge',
-        ]
-    ],
-    'Home Ammenities' => [
-        'icon' => 'fa-users',
-        'items' => [
-            'WiFi' => 'fa-wifi',
-            'Laundry Room' => 'fa-jug-detergent',
-            'Study Room' => 'fa-book',
-            'Lounge' => 'fa-couch',
-            'Bike Storage' => 'fa-bicycle',
-            'Vending Machine' => 'fa-store',
-        ]
-    ],
-    'Fitness & Recreation' => [
-        'icon' => 'fa-dumbbell',
-        'items' => [
-            'Pool Table' => 'fa-table-tennis-paddle-ball',
+            'Security' => 'fa-shield-halved',
         ]
     ],
 ];
 @endphp
+
 
         {{-- AMENITIES --}}
         <div data-tab-content="amenities">
@@ -529,12 +566,12 @@ $amenityGroups = [
                 </div>
             </div>
 
-            {{-- 🗺️ MAP (RELATIVE CONTAINER) --}}
+            {{-- MAP (RELATIVE CONTAINER) --}}
             <div class="relative w-full h-[420px] rounded-2xl border shadow-sm overflow-hidden">
 
                 <div id="listing-map" class="w-full h-full"></div>
 
-                {{-- 🧭 VIEW ON GOOGLE MAPS BUTTON (BOTTOM LEFT) --}}
+                {{-- VIEW ON GOOGLE MAPS BUTTON (BOTTOM LEFT) --}}
                 <div class="absolute bottom-4 left-4 z-10">
                     <a
                         href="https://www.google.com/maps/search/?api=1&query={{ $listing->latitude }},{{ $listing->longitude }}"
@@ -725,103 +762,31 @@ document.querySelectorAll('[data-tab]').forEach(tab => {
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-    // LISTING LOCATION (from DB)
     const listingLocation = {
         lat: {{ $listing->latitude ?? 3.5449 }},
         lng: {{ $listing->longitude ?? 103.4281 }}
     };
-
-    // 🔵 HARDCODED HOTSPOTS
-    const hotspots = [
-        {
-            name: 'UMPSA Pekan',
-            lat: 3.5449,
-            lng: 103.4281,
-            type: 'campus'
-        },
-        {
-            name: 'Lotus’s Pekan',
-            lat: 3.5431,
-            lng: 103.4256,
-            type: 'mart'
-        },
-        {
-            name: 'Bus Stop Pekan',
-            lat: 3.5472,
-            lng: 103.4305,
-            type: 'transport'
-        },
-        {
-            name: 'Restaurant Area',
-            lat: 3.5420,
-            lng: 103.4328,
-            type: 'food'
-        }
-    ];
 
     const mapEl = document.getElementById('listing-map');
     if (!mapEl) return;
 
     const map = new google.maps.Map(mapEl, {
         center: listingLocation,
-        zoom: 30,
+        zoom: 16,
         mapTypeControl: false,
         streetViewControl: false,
     });
 
-    const bounds = new google.maps.LatLngBounds();
-
-    // 🏠 Listing Marker (RED)
-    const listingMarker = new google.maps.Marker({
+    // ✅ DEFAULT GOOGLE MAPS MARKER
+    new google.maps.Marker({
         position: listingLocation,
-        map,
-        title: 'Property Location',
-        icon: {
-            url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
-        }
+        map: map,
+        title: 'Property Location'
+        // no icon = default pin
     });
-
-    bounds.extend(listingMarker.getPosition());
-
-    // 📍 Hotspot Markers (BLUE)
-    hotspots.forEach(hotspot => {
-        const marker = new google.maps.Marker({
-            position: { lat: hotspot.lat, lng: hotspot.lng },
-            map,
-            title: hotspot.name,
-            icon: {
-                url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png'
-            }
-        });
-
-        const info = new google.maps.InfoWindow({
-            content: `
-                <div class="text-sm">
-                    <strong>${hotspot.name}</strong><br>
-                    Type: ${hotspot.type}
-                </div>
-            `
-        });
-
-        marker.addListener('click', () => info.open(map, marker));
-        bounds.extend(marker.getPosition());
-    });
-
-    if (hotspots.length <= 1) {
-        map.setCenter(listingLocation);
-        map.setZoom(18);
-    } else {
-        map.fitBounds(bounds);
-        google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
-            map.setZoom(Math.min(map.getZoom(), 17));
-        });
-    }
-
 
 });
 </script>
-
-
 
 
 @endsection

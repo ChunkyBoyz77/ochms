@@ -79,7 +79,7 @@
                 <span class="font-medium text-gray-700">Identity Document</span>
             </a>
 
-            <a href="{{ Storage::url($landlord->proof_of_address) }}" target="_blank"
+            <a href="{{ Storage::url($landlord->supporting_document) }}" target="_blank"
                class="flex items-center gap-3 p-3 border rounded-lg
                       hover:bg-purple-50 transition">
                 <i class="fa-solid fa-file-contract text-purple-600 text-lg"></i>

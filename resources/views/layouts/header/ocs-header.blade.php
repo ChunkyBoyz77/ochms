@@ -23,7 +23,7 @@
 
         <a href="{{ route('home') }}" class="nav-link font-regular text-gray drop-shadow text-lg hover:text-black-200 cursor-pointer">Home</a>
         <a href="{{ route('ocs.listings.browse') }}" class="nav-link font-regular text-gray drop-shadow text-lg hover:text-black-200 cursor-pointer">Rentals</a>
-        <a class="nav-link font-regular text-gray drop-shadow text-lg hover:text-black-200 cursor-pointer">UMPSA Resources</a>
+        <a href="{{ route('resources.ocs.index') }}" class="nav-link font-regular text-gray drop-shadow text-lg hover:text-black-200 cursor-pointer">UMPSA Resources</a>
     </div>
 
 
@@ -53,10 +53,18 @@
 
                 @auth
                     @if(auth()->user()->role === 'ocs')
-                        {{-- Avatar with initials --}}
-                        <span id="initials" class="text-gray font-semibold">
-                            {{ $initials }}
-                        </span>
+                        @if(auth()->user()->profile_pic)
+                            {{-- PROFILE IMAGE --}}
+                            <img
+                                src="{{ asset('storage/' . auth()->user()->profile_pic) }}"
+                                alt="Profile picture"
+                                class="w-full h-full object-cover rounded-full">
+                        @else
+                            {{-- INITIALS FALLBACK --}}
+                            <span class="text-white font-semibold">
+                                {{ $initials }}
+                            </span>
+                        @endif
                     @else
                         {{-- Hamburger for non-OCS --}}
                         <i id="hamburgerIcon" class="fa-solid fa-bars text-gray text-xl"></i>
@@ -70,15 +78,26 @@
 
             <!-- DROPDOWN MENU -->
             <div id="profileMenu"
-                class="hidden absolute right-0 mt-3 bg-white shadow-lg rounded-xl w-60 py-2 z-50">
+                class="hidden absolute right-0 mt-3 bg-white shadow-lg rounded-xl w-80 py-2 z-50">
 
                 @guest
                     <button onclick="openAuthModal()"
                             class="block px-4 py-2 hover:bg-gray-100 w-full text-left">
                         Log in or Sign up
                     </button>
-                    <a href="{{ route('landlord.auth') }}"
+                    
+                    <a href="{{ route('ocs.listings.browse') }}"
                     class="block px-4 py-2 hover:bg-gray-100 text-gray-800">
+                        Rentals
+                        </span>
+                    </a>
+                    <a href="{{ route('resources.ocs.index') }}"
+                    class="block px-4 py-2 hover:bg-gray-100 text-gray-800">
+                        UMPSA Resources
+                        </span>
+                    </a>
+                    <a href="{{ route('landlord.auth') }}"
+                    class="block px-4 py-2 hover:bg-gray-100 text-red-500">
                         OCHMS
                         <span class="ml-1 align-baseline text-xs text-gray-500 relative top-1">
                             Landlord
@@ -95,9 +114,30 @@
 
 
                 @auth
-                    <a href="{{ route('dashboard') }}" class="block px-4 py-2 hover:bg-gray-100">Dashboard</a>
+                    <a href="{{ route('profile.edit') }}">
+                        <div class="px-4 py-3 border-b border-gray-200">
+                            <p class="font-medium text-gray-900">
+                                {{ Auth::user()->name }}
+                            </p>
+                            <p class="text-sm text-gray-500">
+                                {{ Auth::user()->email }}
+                            </p>
+                        </div>
+                    </a>
+                  
+                    <a href="{{ route('ocs.listings.browse') }}"
+                    class="block px-4 py-2 hover:bg-gray-100 text-gray-800">
+                        Rentals
+                    </a>
+                    <a href="{{ route('resources.ocs.index') }}"
+                    class="block px-4 py-2 hover:bg-gray-100 text-gray-800">
+                        UMPSA Resources
+                        </span>
+                    </a>
 
                     <a href="{{ route('ocs.bookings.index') }}" class="block px-4 py-2 hover:bg-gray-100">Track Booking</a>
+
+                    
 
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
@@ -131,124 +171,5 @@
                 }
             });
         });
-
-        
-
-    const authModal = document.getElementById('authModal');
-    const modalBox = document.getElementById('authModalBox');
-
-    function getScrollbarWidth() {
-        return window.innerWidth - document.documentElement.clientWidth;
-    }
-
-
-   function openAuthModal() {
-        const scrollbarWidth = getScrollbarWidth();
-
-        document.body.style.paddingRight = scrollbarWidth + 'px';
-        document.body.classList.add('overflow-hidden');
-
-        authModal.classList.remove('hidden');
-        document.getElementById('profileMenu')?.classList.add('hidden');
-        document.getElementById('mainNav')?.classList.add('pointer-events-none');
-
-        showLogin();
-    }
-
-    function closeAuthModal() {
-        document.body.classList.remove('overflow-hidden');
-        document.body.style.paddingRight = '';
-
-        authModal.classList.add('hidden');
-        document.getElementById('mainNav')?.classList.remove('pointer-events-none');
-    }
-
-
-    function showRegister() {
-        loginForm.classList.add('hidden');
-        registerForm.classList.remove('hidden');
-    }
-
-    function showLogin() {
-        registerForm.classList.add('hidden');
-        loginForm.classList.remove('hidden');
-    }
-
-    authModal.addEventListener('click', e => {
-        if (e.target === authModal) closeAuthModal();
-    });
-
-
-    function togglePassword(id, btn) {
-        const input = document.getElementById(id);
-        const icon = btn.querySelector('i');
-
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.classList.replace('fa-eye', 'fa-eye-slash');
-        } else {
-            input.type = 'password';
-            icon.classList.replace('fa-eye-slash', 'fa-eye');
-        }
-    }
-
-    function checkPasswordStrength() {
-        const password = document.getElementById('password').value;
-        const status = document.getElementById('passwordStatus');
-
-        const rules = [
-            password.length >= 8,
-            /[A-Z]/.test(password),
-            /\d/.test(password)
-        ];
-
-        status.classList.remove('hidden');
-
-        if (rules.every(Boolean)) {
-            status.textContent = 'All requirements fulfilled';
-            status.className = 'text-sm mt-1 text-green-600';
-        } else {
-            status.textContent = 'Password must be at least 8 characters, include an uppercase letter and a number';
-            status.className = 'text-sm mt-1 text-gray-500';
-        }
-    }
-
-    function checkPasswordMatch() {
-        const pwd = document.getElementById('password').value;
-        const confirm = document.getElementById('confirmPassword').value;
-        const msg = document.getElementById('matchMessage');
-
-        if (!confirm) {
-            msg.textContent = '';
-            return;
-        }
-
-        if (pwd === confirm) {
-            msg.textContent = 'Passwords match';
-            msg.className = 'text-sm text-green-600';
-        } else {
-            msg.textContent = 'Passwords do not match';
-            msg.className = 'text-sm text-red-500';
-        }
-    }
-
-    //Hidden Admin Login
-    document.addEventListener('keydown', function (e) {
-        if (e.altKey) {
-            document.getElementById('adminLoginBtn')?.classList.remove('hidden');
-        }
-    });
-
-    document.addEventListener('keyup', function () {
-        document.getElementById('adminLoginBtn')?.classList.add('hidden');
-    });
-
-    </script>
-
-    @if ($errors->any())
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            openAuthModal();
-        });
-    </script>
-     @endif
+   
+</script>

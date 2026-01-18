@@ -397,41 +397,32 @@
         </div>
 @php
 $amenityGroups = [
+    'Utilities & Comfort' => [
+        'icon' => 'fa-house',
+        'items' => [
+            'WiFi' => 'fa-wifi',
+            'Air Conditioning' => 'fa-snowflake',
+            'Furnished' => 'fa-couch',
+        ]
+    ],
+
+    'Facilities' => [
+        'icon' => 'fa-building',
+        'items' => [
+            'Parking' => 'fa-car',
+            'Washing Machine' => 'fa-soap',
+        ]
+    ],
+
     'Safety' => [
         'icon' => 'fa-shield-halved',
         'items' => [
-            'CCTV' => 'fa-video',
-            '24 Hours Security' => 'fa-user-shield',
-            'Fire System' => 'fa-fire-extinguisher',
-            'Controlled Access' => 'fa-key',
-            'Security Guard' => 'fa-user-lock',
-        ]
-    ],
-    'Property Services' => [
-        'icon' => 'fa-concierge-bell',
-        'items' => [
-            'Reception' => 'fa-bell-concierge',
-        ]
-    ],
-    'Home Ammenities' => [
-        'icon' => 'fa-users',
-        'items' => [
-            'WiFi' => 'fa-wifi',
-            'Laundry Room' => 'fa-jug-detergent',
-            'Study Room' => 'fa-book',
-            'Lounge' => 'fa-couch',
-            'Bike Storage' => 'fa-bicycle',
-            'Vending Machine' => 'fa-store',
-        ]
-    ],
-    'Fitness & Recreation' => [
-        'icon' => 'fa-dumbbell',
-        'items' => [
-            'Pool Table' => 'fa-table-tennis-paddle-ball',
+            'Security' => 'fa-shield-halved',
         ]
     ],
 ];
 @endphp
+
 
         {{-- AMENITIES --}}
         <div data-tab-content="amenities">
@@ -750,101 +741,32 @@ document.querySelectorAll('[data-tab]').forEach(tab => {
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-    // LISTING LOCATION (from DB)
     const listingLocation = {
         lat: {{ $listing->latitude ?? 3.5449 }},
         lng: {{ $listing->longitude ?? 103.4281 }}
     };
-
-    // 🔵 HARDCODED HOTSPOTS
-    const hotspots = [
-        {
-            name: 'UMPSA Pekan',
-            lat: 3.5449,
-            lng: 103.4281,
-            type: 'campus'
-        },
-        {
-            name: 'Lotus’s Pekan',
-            lat: 3.5431,
-            lng: 103.4256,
-            type: 'mart'
-        },
-        {
-            name: 'Bus Stop Pekan',
-            lat: 3.5472,
-            lng: 103.4305,
-            type: 'transport'
-        },
-        {
-            name: 'Restaurant Area',
-            lat: 3.5420,
-            lng: 103.4328,
-            type: 'food'
-        }
-    ];
 
     const mapEl = document.getElementById('listing-map');
     if (!mapEl) return;
 
     const map = new google.maps.Map(mapEl, {
         center: listingLocation,
-        zoom: 30,
+        zoom: 16,
         mapTypeControl: false,
         streetViewControl: false,
     });
 
-    const bounds = new google.maps.LatLngBounds();
-
-    // 🏠 Listing Marker (RED)
-    const listingMarker = new google.maps.Marker({
+    // DEFAULT GOOGLE MAPS MARKER
+    new google.maps.Marker({
         position: listingLocation,
-        map,
-        title: 'Property Location',
-        icon: {
-            url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
-        }
+        map: map,
+        title: 'Property Location'
+        // no icon = default pin
     });
-
-    bounds.extend(listingMarker.getPosition());
-
-    // 📍 Hotspot Markers (BLUE)
-    hotspots.forEach(hotspot => {
-        const marker = new google.maps.Marker({
-            position: { lat: hotspot.lat, lng: hotspot.lng },
-            map,
-            title: hotspot.name,
-            icon: {
-                url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png'
-            }
-        });
-
-        const info = new google.maps.InfoWindow({
-            content: `
-                <div class="text-sm">
-                    <strong>${hotspot.name}</strong><br>
-                    Type: ${hotspot.type}
-                </div>
-            `
-        });
-
-        marker.addListener('click', () => info.open(map, marker));
-        bounds.extend(marker.getPosition());
-    });
-
-    if (hotspots.length <= 1) {
-        map.setCenter(listingLocation);
-        map.setZoom(18);
-    } else {
-        map.fitBounds(bounds);
-        google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
-            map.setZoom(Math.min(map.getZoom(), 17));
-        });
-    }
-
 
 });
 </script>
+
 
 
 

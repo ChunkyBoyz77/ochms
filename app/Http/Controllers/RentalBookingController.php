@@ -102,6 +102,53 @@ public function createListing(Request $request)
         'policy_early_movein' => ['nullable', 'string'],
         'policy_late_payment' => ['nullable', 'string'],
         'policy_additional' => ['nullable', 'string'],
+    ], [
+        //Error messages
+        'title.required' => 'Listing title is required.',
+        'title.max' => 'Listing title cannot exceed 255 characters.',
+
+        'property_type.required' => 'Please select a property type.',
+        'property_type.in' => 'Invalid property type selected.',
+
+        'description.required' => 'Please provide a description of the property.',
+
+
+        'bedrooms.required' => 'Number of bedrooms is required.',
+        'bedrooms.integer' => 'Bedrooms must be a whole number.',
+        'bedrooms.min' => 'Bedrooms cannot be negative.',
+
+        'bathrooms.required' => 'Number of bathrooms is required.',
+        'bathrooms.integer' => 'Bathrooms must be a whole number.',
+        'bathrooms.min' => 'Bathrooms cannot be negative.',
+
+        'beds.required' => 'Number of beds is required.',
+        'beds.integer' => 'Beds must be a whole number.',
+        'beds.min' => 'Beds cannot be negative.',
+
+        'max_occupants.required' => 'Maximum number of occupants is required.',
+        'max_occupants.integer' => 'Maximum occupants must be a whole number.',
+        'max_occupants.min' => 'There must be at least one occupant.',
+
+        'address.required' => 'Property address is required.',
+        'latitude.numeric' => 'Invalid latitude value.',
+        'longitude.numeric' => 'Invalid longitude value.',
+        'distance_to_umpsa.numeric' => 'Invalid distance value.',
+
+        'monthly_rent.required' => 'Monthly rent is required.',
+        'monthly_rent.numeric' => 'Monthly rent must be a valid number.',
+        'monthly_rent.min' => 'Monthly rent cannot be negative.',
+
+        'deposit.numeric' => 'Deposit must be a valid number.',
+        'deposit.min' => 'Deposit cannot be negative.',
+        'deposit.max' => 'Deposit cannot exceed 200% of monthly rent.',
+
+        'amenities.array' => 'Invalid amenities selection.',
+
+        'policy_cancellation.string' => 'Cancellation policy must be valid text.',
+        'policy_refund.string' => 'Refund policy must be valid text.',
+        'policy_early_movein.string' => 'Early move-in policy must be valid text.',
+        'policy_late_payment.string' => 'Late payment policy must be valid text.',
+        'policy_additional.string' => 'Additional rules must be valid text.',
     ]);
 
     if ($validated['property_type'] === 'Room') {

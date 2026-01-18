@@ -24,7 +24,7 @@ class Landlord extends Model
 
         // Documents (binary)
         'ic_pic',
-        'proof_of_address',
+        'supporting_document',
 
         // Financial
         'bank_account_num',
@@ -106,7 +106,7 @@ class Landlord extends Model
     public function hasSubmittedDocuments(): bool
     {
         return !is_null($this->ic_pic)
-            && !is_null($this->proof_of_address)
+            && !is_null($this->supporting_document)
             && !is_null($this->bank_account_num)
             && $this->agreement_accepted === true;
     }

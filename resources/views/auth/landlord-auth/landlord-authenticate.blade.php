@@ -58,11 +58,6 @@
                 <div class="mb-2 relative">
                     <div class="flex justify-between items-center">
                         <label class="font-medium">Password</label>
-
-                        <a href="{{ route('password.request') }}"
-                        class="text-sm text-gray-900 hover:underline">
-                            Forgot password?
-                        </a>
                     </div>
 
                     <input type="password"
@@ -81,17 +76,27 @@
                     </button>
                 </div>
 
-                <!-- REMEMBER ME -->
-                <div class="flex items-center gap-2 mt-4">
-                    <input type="checkbox"
-                        name="remember"
-                        id="remember"
-                        class="rounded border-gray-300 text-gray-900
-                                focus:ring-gray-900">
+                <div class="flex justify-between items-center">
 
-                    <label for="remember" class="text-sm text-gray-600">
-                        Remember me
-                    </label>
+                    <!-- REMEMBER ME -->
+                    <div class="flex items-center gap-2 mt-4">
+                        <input type="checkbox"
+                            name="remember"
+                            id="remember"
+                            class="rounded border-gray-300 text-gray-900
+                                    focus:ring-gray-900">
+
+                        <label for="remember" class="text-sm text-gray-600">
+                            Remember me
+                        </label>
+                    </div>
+
+                    <a href="{{ route('password.request') }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-sm text-gray-900 hover:underline">
+                            Forgot password?
+                    </a>
                 </div>
 
                 <!-- SUBMIT -->

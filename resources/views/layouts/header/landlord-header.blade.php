@@ -49,17 +49,6 @@
     <!-- RIGHT SECTION -->
     <div class="flex items-center space-x-4">
 
-        <!-- Notification Bell -->
-        <button class="relative w-11 h-11 rounded-full
-                       bg-white/20 hover:bg-white/30
-                       flex items-center justify-center transition">
-
-            <i class="fa-solid fa-bell text-white text-lg"></i>
-
-            {{-- unread indicator --}}
-            <span class="absolute top-2 right-2 w-2 h-2 bg-red-600 rounded-full"></span>
-        </button>
-
         <!-- Profile Button -->
         <div class="relative">
             <button id="profileMenuBtn"
@@ -68,22 +57,55 @@
                        bg-white/20 hover:bg-white/30
                        transition">
 
-                {{-- INITIALS AVATAR (same as OCS) --}}
-                <span class="text-white font-semibold">
-                    {{ $initials }}
-                </span>
+                @if(auth()->user()->profile_pic)
+                        {{-- PROFILE IMAGE --}}
+                        <img
+                            src="{{ asset('storage/' . auth()->user()->profile_pic) }}"
+                            alt="Profile picture"
+                            class="w-full h-full object-cover rounded-full">
+                    @else
+                        {{-- INITIALS FALLBACK --}}
+                        <span class="text-white font-semibold">
+                            {{ $initials }}
+                        </span>
+                    @endif
             </button>
 
             <!-- DROPDOWN -->
             <div id="profileMenu"
                 class="hidden absolute right-0 mt-3
                        bg-white shadow-lg rounded-xl
-                       w-60 py-2 z-50">
+                       w-80 py-2 z-50">
+                
+                @if(
+                auth()->check() &&
+                auth()->user()->landlord &&
+                auth()->user()->landlord->screening_status === 'approved'
+                )
 
-                <a href="{{ route('profile.edit') }}"
-                   class="block px-4 py-2 hover:bg-gray-100">
-                    Profile
+                <a href="{{ route('profile.edit') }}">
+                    <div class="px-4 py-3 border-b border-gray-200">
+                        <p class="font-medium text-gray-900">
+                            {{ Auth::user()->name }}
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            {{ Auth::user()->email }}
+                        </p>
+                    </div>
                 </a>
+                
+                <a href="{{ route('landlord.dashboard') }}"
+                class="block px-4 py-2 hover:bg-gray-100 text-gray-800">
+                    Dashboard
+                </a>
+                <a href="{{ route('landlord.listings') }}"
+                class="block px-4 py-2 hover:bg-gray-100 text-gray-800">
+                    Listings
+                    </span>
+                </a>
+
+                <a href="{{ route('landlord.booking.requests') }}" class="block px-4 py-2 hover:bg-gray-100">Booking Request</a>
+                @endif
 
                 {{-- NON-VERIFIED LANDLORD CTA --}}
                 @if(

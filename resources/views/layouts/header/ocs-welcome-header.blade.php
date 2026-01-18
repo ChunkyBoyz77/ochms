@@ -9,6 +9,160 @@
     }
 @endphp
 
+<!-- AUTH MODAL OVERLAY -->
+<div id="authModal"
+     class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-[999] flex items-center justify-center">
+
+    <!-- MODAL BOX -->
+    <div id="authModalBox"
+         class="bg-white rounded-2xl w-full max-w-xl mx-4 shadow-xl relative max-h-[90vh] overflow-y-auto">
+
+        <!-- Close Button -->
+        <button onclick="closeAuthModal()"
+                class="absolute top-4 right-4 text-gray-500 hover:text-gray-900">
+            <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+
+        <div class="p-8">
+
+            <h2 class="text-xl font-semibold mb-6">Log in or sign up</h2>
+
+            <!-- LOGIN FORM -->
+            <div id="loginForm">
+                 @if (session('login_error'))
+                    <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+                        {{ session('login_error') }}
+                    </div>
+                @endif
+
+                <form id="loginFormElement" method="POST" action="{{ route('login') }}">
+                    @csrf
+
+                    <div class="mb-4">
+                        <label class="font-semibold">Email</label>
+                        <input type="email" name="email" required
+                               class="w-full p-3 border rounded mt-1">
+                    </div>
+
+                    <div class="mb-4 relative">
+                        <label class="font-semibold">Password</label>
+                        <input type="password" id="loginPassword" name="password" required
+                               class="w-full p-3 border rounded mt-1 pr-10">
+
+                        <button type="button"
+                                onclick="togglePassword('loginPassword', this)"
+                                class="absolute right-3 top-10 text-gray-500">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-4">
+                        <label class="inline-flex items-center gap-2 text-sm text-gray-600">
+                            <input type="checkbox" name="remember"
+                                   class="rounded border-gray-300 text-gray-900 focus:ring-gray-900">
+                            Remember me
+                        </label>
+
+                        <a href="{{ route('password.request') }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                           class="text-sm text-gray-900 hover:underline">
+                            Forgot password?
+                        </a>
+                    </div>
+
+                    <button type="submit"
+                            class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg">
+                        Continue
+                    </button>
+                </form>
+
+                <p class="text-sm text-center mt-4">
+                    New here?
+                    <button onclick="showRegister()"
+                            class="text-gray-900 font-semibold">
+                        Create an account
+                    </button>
+                </p>
+            </div>
+
+            <!-- REGISTER FORM -->
+            <div id="registerForm" class="hidden">
+
+                <form method="POST" action="{{ route('register.ocs.store') }}">
+                    @csrf
+                    <input type="hidden" name="role" value="ocs">
+
+                    <div class="mb-4">
+                        <label class="font-semibold">Full Name</label>
+                        <input type="text" name="name" required
+                               class="w-full p-3 border rounded mt-1">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="font-semibold">Student ID</label>
+                        <input type="text" name="matric_id" required
+                               class="w-full p-3 border rounded mt-1">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="font-semibold">Email</label>
+                        <input type="email" name="email" required
+                               class="w-full p-3 border rounded mt-1">
+                    </div>
+
+                    <div class="mb-2 relative">
+                        <label class="font-semibold">Password</label>
+                        <input type="password" id="password" name="password" required
+                               class="w-full p-3 border rounded mt-1 pr-10"
+                               oninput="checkPasswordStrength(); checkPasswordMatch();">
+
+                        <button type="button"
+                                onclick="togglePassword('password', this)"
+                                class="absolute right-3 top-10 text-gray-500">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <p id="passwordStatus"
+                       class="text-sm mt-1 text-gray-500 hidden"></p>
+
+                    <div class="mb-2 relative mt-4">
+                        <label class="font-semibold">Confirm Password</label>
+                        <input type="password" id="confirmPassword"
+                               name="password_confirmation" required
+                               class="w-full p-3 border rounded mt-1 pr-10"
+                               oninput="checkPasswordMatch()">
+
+                        <button type="button"
+                                onclick="togglePassword('confirmPassword', this)"
+                                class="absolute right-3 top-10 text-gray-500">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <p id="matchMessage" class="text-sm mt-1"></p>
+
+                    <button type="submit"
+                            class="w-full mt-6 bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg">
+                        Sign up
+                    </button>
+                </form>
+
+                <p class="text-sm text-center mt-4">
+                    Already have an account?
+                    <button onclick="showLogin()"
+                            class="text-gray-900 font-semibold">
+                        Log in
+                    </button>
+                </p>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
  
  <nav id="mainNav"
         class="fixed top-0 left-0 w-full z-50 px-10 py-4 flex items-center justify-between transition-all duration-200 bg-transparent">
@@ -24,7 +178,7 @@
 
             <a href="{{ route('home') }}" class="nav-link font-regular text-white drop-shadow text-lg hover:text-black-200 cursor-pointer">Home</a>
             <a href="{{ route('ocs.listings.browse') }}" class="nav-link font-regular text-white drop-shadow text-lg hover:text-black-200 cursor-pointer">Rentals</a>
-            <a class="nav-link font-regular text-white drop-shadow text-lg hover:text-black-200 cursor-pointer">UMPSA Resources</a>
+            <a href="{{ route('resources.ocs.index') }}" class="nav-link font-regular text-white drop-shadow text-lg hover:text-black-200 cursor-pointer">UMPSA Resources</a>
         </div>
 
 
@@ -54,10 +208,18 @@
 
                     @auth
                         @if(auth()->user()->role === 'ocs')
-                            {{-- Avatar with initials --}}
-                            <span id="initials" class="text-white font-semibold">
-                                {{ $initials }}
-                            </span>
+                             @if(auth()->user()->profile_pic)
+                                {{-- PROFILE IMAGE --}}
+                                <img
+                                    src="{{ asset('storage/' . auth()->user()->profile_pic) }}"
+                                    alt="Profile picture"
+                                    class="w-full h-full object-cover rounded-full">
+                            @else
+                                {{-- INITIALS FALLBACK --}}
+                                <span class="text-white font-semibold">
+                                    {{ $initials }}
+                                </span>
+                            @endif
                         @else
                             {{-- Hamburger for non-OCS --}}
                             <i id="hamburgerIcon" class="fa-solid fa-bars text-white text-xl"></i>
@@ -71,15 +233,26 @@
 
                 <!-- DROPDOWN MENU -->
                 <div id="profileMenu"
-                    class="hidden absolute right-0 mt-3 bg-white shadow-lg rounded-xl w-60 py-2 z-50">
+                    class="hidden absolute right-0 mt-3 bg-white shadow-lg rounded-xl w-80 py-2 z-50">
 
                     @guest
                         <button onclick="openAuthModal()"
                                 class="block px-4 py-2 hover:bg-gray-100 w-full text-left">
                             Log in or Sign up
                         </button>
-                        <a href="{{ route('landlord.auth') }}"
+                        
+                        <a href="{{ route('ocs.listings.browse') }}"
                         class="block px-4 py-2 hover:bg-gray-100 text-gray-800">
+                            Rentals
+                            </span>
+                        </a>
+                        <a href="{{ route('resources.ocs.index') }}"
+                        class="block px-4 py-2 hover:bg-gray-100 text-gray-800">
+                            UMPSA Resources
+                            </span>
+                        </a>
+                        <a href="{{ route('landlord.auth') }}"
+                        class="block px-4 py-2 hover:bg-gray-100 text-red-500">
                             OCHMS
                             <span class="ml-1 align-baseline text-xs text-gray-500 relative top-1">
                                 Landlord
@@ -96,7 +269,27 @@
 
 
                     @auth
-                        <a href="{{ route('dashboard') }}" class="block px-4 py-2 hover:bg-gray-100">Dashboard</a>
+                        <a href="{{ route('profile.edit') }}">
+                            <div class="px-4 py-3 border-b border-gray-200">
+                                <p class="font-medium text-gray-900">
+                                    {{ Auth::user()->name }}
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    {{ Auth::user()->email }}
+                                </p>
+                            </div>
+                        </a>
+
+                        <a href="{{ route('ocs.listings.browse') }}"
+                        class="block px-4 py-2 hover:bg-gray-100 text-gray-800">
+                            Rentals
+                            </span>
+                        </a>
+                        <a href="{{ route('resources.ocs.index') }}"
+                        class="block px-4 py-2 hover:bg-gray-100 text-gray-800">
+                            UMPSA Resources
+                            </span>
+                        </a>
                         <a href="{{ route('ocs.bookings.index') }}" class="block px-4 py-2 hover:bg-gray-100">Track Booking</a>
 
                         <form method="POST" action="{{ route('logout') }}">
@@ -113,6 +306,8 @@
         </div>
 
     </nav>
+
+    
 
     <!-- PROFILE DROPDOWN SCRIPT -->
     <script>
@@ -306,7 +501,7 @@
 
     </script>
 
-    @if ($errors->any())
+    @if (session('show_auth_modal'))
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             openAuthModal();

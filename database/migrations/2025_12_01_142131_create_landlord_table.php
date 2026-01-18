@@ -27,7 +27,7 @@ return new class extends Migration
 
             // === DOCUMENTS (stored in DB as binary) ===
             $table->string('ic_pic')->nullable();               // PDF / JPG
-            $table->string('proof_of_address')->nullable();     // PDF / JPG
+            $table->string('supporting_document')->nullable();     // PDF / JPG
 
             // === FINANCIAL ===
             $table->string('bank_account_num')->nullable();

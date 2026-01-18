@@ -45,17 +45,27 @@ $amenityIcons = [
 </a>
 
     <div class="grid grid-cols-12">
+        @php
+            $thumbnail = $listing->images
+                ->filter(function ($media) {
+                    return in_array(
+                        strtolower(pathinfo($media->image_path, PATHINFO_EXTENSION)),
+                        ['jpg','jpeg','png','webp']
+                    );
+                })
+                ->first();
+        @endphp
 
         {{-- IMAGE --}}
         <div class="col-span-3 relative">
 
             <img
-                src="{{ $listing->images->first()?->image_path
-                        ? asset('storage/'.$listing->images->first()->image_path)
+                src="{{  $thumbnail
+                        ? asset('storage/'.$thumbnail->image_path)
                         : asset('images/ocs-taman-placeholder.jpg') }}"
-                class="w-full h-48 object-cover">
+                        class="w-full h-48 object-cover">
 
-            {{-- ⭐ RATING BADGE --}}
+            {{-- RATING BADGE --}}
             @if($listing->reviews_count > 0)
                 <div
                     class="absolute top-3 left-3
@@ -195,14 +205,25 @@ $amenityIcons = [
 </a>
 
     <div class="grid grid-cols-12">
+        @php
+            $thumbnail = $listing->images
+                ->filter(fn ($media) =>
+                    in_array(
+                        strtolower(pathinfo($media->image_path, PATHINFO_EXTENSION)),
+                        ['jpg','jpeg','png','webp']
+                    )
+                )
+                ->first();
+        @endphp
+
 
         {{-- IMAGE --}}
         <div class="col-span-3">
             <img
-                src="{{ $listing->images->first()?->image_path
-                        ? asset('storage/'.$listing->images->first()->image_path)
+                src="{{  $thumbnail
+                        ? asset('storage/'.$thumbnail->image_path)
                         : asset('images/ocs-taman-placeholder.jpg') }}"
-                class="w-full h-48 object-cover">
+                        class="w-full h-48 object-cover">
         </div>
 
         {{-- CONTENT --}}
